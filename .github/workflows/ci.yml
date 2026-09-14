@@ -16,11 +16,21 @@ jobs:
         node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v5
+        with:
+          path: lingya-agents-sdk-typescript
+      - uses: actions/checkout@v5
+        with:
+          repository: lingya-ai/lingya-agents-openapi
+          ref: 7362df0
+          path: lingya-agents-openapi
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-          registry-url: https://registry.npmjs.org
-      - run: npm ci
+          cache-dependency-path: lingya-agents-sdk-typescript/package-lock.json
+      - run: npm ci --registry=https://registry.npmmirror.com
+        working-directory: lingya-agents-sdk-typescript
       - run: npm run check
+        working-directory: lingya-agents-sdk-typescript
       - run: npm pack --dry-run
+        working-directory: lingya-agents-sdk-typescript
