@@ -8,7 +8,15 @@ export interface OpenApiCredentials {
     secretKey: string;
 }
 
-/** 构造已签名 fetch；每次调用都会重新生成 timestamp、nonce 和签名。 / Creates a fetch function that signs every attempt independently. */
+/**
+ * 构造已签名 fetch；每次调用都会重新生成 timestamp、nonce 和签名。 / Creates a fetch that signs every attempt independently.
+ *
+ * 签名在 Fetch Request 完全确定后计算，避免 URL 或 body 在签名后再次编码。
+ *
+ * @param credentials - channel 的访问密钥与 HMAC secret。
+ * @param externalUserId - UTF-8 编码后为 1..256 字节且不含 NUL 的外部用户 ID。
+ * @returns 与原生 fetch 兼容的签名 transport。
+ */
 export function createSignedFetch(credentials: OpenApiCredentials, externalUserId: string): typeof fetch {
     const userBytes = Buffer.from(externalUserId, 'utf8');
     if (userBytes.length < 1 || userBytes.length > 256 || userBytes.includes(0)) {
@@ -43,7 +51,13 @@ export function createSignedFetch(credentials: OpenApiCredentials, externalUserI
     };
 }
 
-/** 仅用于测试固定输入的签名计算。 / Computes a signature for deterministic golden-vector verification. */
+/**
+ * 对固定 canonical string 计算 HMAC。 / Computes HMAC for a fixed canonical string.
+ *
+ * @param secretKey - HMAC-SHA256 secret。
+ * @param canonical - 已按协议顺序拼接的规范字符串。
+ * @returns 小写十六进制签名。
+ */
 export function signCanonical(secretKey: string, canonical: string): string {
     return createHmac('sha256', secretKey).update(canonical).digest('hex');
 }

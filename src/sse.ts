@@ -1,4 +1,10 @@
-/** 按 SSE 规范解码分片、多行 data 与心跳。 / Decodes chunked, multiline SSE data while ignoring heartbeats. */
+/**
+ * 按 SSE 规范解码分片、多行 data 与心跳。 / Decodes chunked, multiline SSE data while ignoring heartbeats.
+ *
+ * @param response - Content-Type 为 `text/event-stream` 且 body 未被读取的成功响应。
+ * @returns 每个完整事件合并后的 data 字符串；关闭迭代器会取消后续读取。
+ * @throws Error 当响应没有可读 body。
+ */
 export async function* decodeSse(response: Response): AsyncGenerator<string> {
     if (response.body === null) throw new Error('SSE response has no body');
     const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();

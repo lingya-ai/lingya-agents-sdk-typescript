@@ -30,17 +30,17 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
         results.push({ method, path, status, outcome, requestId: requestId ?? `local-${String(results.length + 1).padStart(3, '0')}` });
     };
     const request = async <T>(method: string, suffix: string, body?: object, query?: URLSearchParams): Promise<T> => {
-        const response = await user.rawRequest(method, suffix, body, query);
+        const response = await user.rawRequest(method, suffix, body === undefined ? undefined : JSON.stringify(body), query);
         register(method, suffix, response.status, '通过', requestId(response));
         return await response.json() as T;
     };
     const status = async (method: string, suffix: string, body?: object) => {
-        const response = await user.rawRequest(method, suffix, body);
+        const response = await user.rawRequest(method, suffix, body === undefined ? undefined : JSON.stringify(body));
         register(method, suffix, response.status, '通过', requestId(response));
     };
     const expectedDomain = async (method: string, suffix: string, body?: object, query?: URLSearchParams, accept = 'application/json') => {
         try {
-            const response = await user.rawRequest(method, suffix, body, query, accept);
+            const response = await user.rawRequest(method, suffix, body === undefined ? undefined : JSON.stringify(body), query, accept);
             throw new Error(`${method} ${suffix} unexpectedly returned ${response.status}`);
         } catch (error) {
             assert(
@@ -103,7 +103,7 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
         await expectedDomain('GET', '/knowledge-bases/citations/CHUNK/9223372036854775807/metadata');
         await request('GET', `/conversations/${first.conversationId}/workspace/files`);
         await expectedDomain('GET', `/conversations/${first.conversationId}/workspace/files/preview`, undefined, new URLSearchParams({ path: 'missing-file.txt' }));
-        const probe = await user.rawRequest('POST', '/stream-probe', { probeId: `all-${crypto.randomUUID()}` }, undefined, 'text/event-stream');
+        const probe = await user.rawRequest('POST', '/stream-probe', JSON.stringify({ probeId: `all-${crypto.randomUUID()}` }), undefined, 'text/event-stream');
         let probeCount = 0;
         for await (const data of decodeSse(probe)) { JSON.parse(data); probeCount += 1; }
         assert.equal(probeCount, 4);
