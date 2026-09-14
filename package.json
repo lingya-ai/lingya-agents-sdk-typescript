@@ -1,0 +1,32 @@
+{
+  "name": "@lingya-ai/agents-sdk",
+  "version": "0.1.2",
+  "description": "Strongly typed server-side TypeScript SDK for Lingya Agents OpenAPI",
+  "author": "Lingya AI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lingya-ai/lingya-agents-sdk-typescript.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.esm.json",
+    "check": "npm run build && npm run test && npm run audit:models",
+    "test": "tsx --test test/*.test.ts",
+    "test:live": "tsx --test test/live.test.ts",
+    "audit:models": "node scripts/audit-models.mjs",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
