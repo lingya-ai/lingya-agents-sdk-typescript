@@ -28,7 +28,13 @@ function runNpm(argumentsList, workingDirectory = repositoryRoot) {
 
 try {
   const packResult = JSON.parse(runNpm(['pack', '--json', '--ignore-scripts']));
-  tarballPath = resolve(repositoryRoot, packResult[0].filename);
+  // npm 12 changed `npm pack --json` from an array to an object keyed by package name.
+  // Accept both shapes so local npm 10 and the OIDC release runner verify the same tarball.
+  const packedPackage = Array.isArray(packResult) ? packResult[0] : Object.values(packResult)[0];
+  if (packedPackage === undefined || typeof packedPackage.filename !== 'string') {
+    throw new Error('npm pack did not report the generated tarball filename');
+  }
+  tarballPath = resolve(repositoryRoot, packedPackage.filename);
   runNpm([
     'install',
     tarballPath,
