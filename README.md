@@ -26,14 +26,19 @@ const user = new LingyaAgentsClient('https://lingtong.lingya.tech/', channelId, 
 }).forUser('external-user-id');
 
 const submission = await user.chat.createChat({
-  channelId,
-  aiChatInput: { query: '你好' },
+  query: '你好',
 });
 
-for await (const event of user.streamChatEvents(submission.conversationId, submission.messageId)) {
+for await (const event of user.chat.streamChatEvents(
+  submission.conversationId,
+  { messageId: submission.messageId },
+)) {
   if (event.type === 'end') break;
 }
 ```
+
+十个业务分组覆盖全部 46 个接口；`channelId` 只在根客户端构造时提供，`user.lowLevel` 仅作为迁移入口保留到 1.0。
+Ten business groups cover all 46 operations; provide `channelId` only to the root client, while `user.lowLevel` remains a migration-only escape hatch until 1.0.
 
 SDK 会在最终 URL、查询串、`Content-Type` 与正文（body）字节确定后签名；每次请求独立生成 nonce，secret 不会进入请求、日志或异常。
 The SDK signs only after the final URL, query string, `Content-Type`, and body bytes are fixed. Every request receives a fresh nonce, and the secret is never included in requests, logs, or exceptions.

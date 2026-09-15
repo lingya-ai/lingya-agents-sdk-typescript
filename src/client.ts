@@ -1,8 +1,20 @@
 import { Configuration } from './runtime';
 import { ChatApi, ConfigurationApi, ConversationsApi, EventsApi, FilesApi, InteractionsApi, KnowledgeApi, MessagesApi, SQLApi, WorkspaceApi } from './apis';
 import { createSignedFetch, type OpenApiCredentials } from './hmac';
-import { decodeSse } from './sse';
-import { decodeAiChatBriefEvent, type LingyaAiChatBriefEvent } from './events';
+import { type LingyaAiChatBriefEvent } from './events';
+import {
+    LingyaAgentsLowLevelApis,
+    LingyaChatApi,
+    LingyaConfigurationApi,
+    LingyaConversationsApi,
+    LingyaEventsApi,
+    LingyaFilesApi,
+    LingyaInteractionsApi,
+    LingyaKnowledgeApi,
+    LingyaMessagesApi,
+    LingyaSqlApi,
+    LingyaWorkspaceApi,
+} from './bound';
 
 /**
  * Lingya Agents SDK 入口，仅适用于可信服务端。 / Server-side Lingya Agents SDK entry point.
@@ -41,25 +53,32 @@ export class LingyaAgentsClient {
 /** 已绑定外部用户的强类型 API 集合。 / Strongly typed API collection bound to one external user. */
 export class LingyaAgentsUserClient {
     /** 发起新聊天和流探针。 / Starts chats and stream probes. */
-    public readonly chat: ChatApi;
+    public readonly chat: LingyaChatApi;
     /** 读取 Agent 与会话配置。 / Reads Agent and conversation configuration. */
-    public readonly configuration: ConfigurationApi;
+    public readonly configuration: LingyaConfigurationApi;
     /** 管理会话、状态、分享和异步任务。 / Manages conversations, status, shares, and async tasks. */
-    public readonly conversations: ConversationsApi;
+    public readonly conversations: LingyaConversationsApi;
     /** 查询已持久化事件。 / Reads persisted events. */
-    public readonly events: EventsApi;
+    public readonly events: LingyaEventsApi;
     /** 管理附件与预签名 URL。 / Manages attachments and pre-signed URLs. */
-    public readonly files: FilesApi;
+    public readonly files: LingyaFilesApi;
     /** 回答用户问题并处理计划审批。 / Handles user answers and plan approval. */
-    public readonly interactions: InteractionsApi;
+    public readonly interactions: LingyaInteractionsApi;
     /** 查询引用元数据。 / Reads citation metadata. */
-    public readonly knowledge: KnowledgeApi;
+    public readonly knowledge: LingyaKnowledgeApi;
     /** 查询消息并控制排队消息。 / Reads messages and controls queued messages. */
-    public readonly messages: MessagesApi;
+    public readonly messages: LingyaMessagesApi;
     /** 查询、导出 SQL 结果与图表数据。 / Reads and exports SQL results and chart data. */
-    public readonly sql: SQLApi;
+    public readonly sql: LingyaSqlApi;
     /** 查询工作区文件及预览。 / Reads workspace files and previews. */
-    public readonly workspace: WorkspaceApi;
+    public readonly workspace: LingyaWorkspaceApi;
+
+    /**
+     * 兼容旧版本的原始生成 API；正常业务调用应使用绑定门面。 / Raw generated APIs retained for migration only.
+     *
+     * @deprecated 将在 1.0 移除。 / Scheduled for removal in 1.0.
+     */
+    public readonly lowLevel: LingyaAgentsLowLevelApis;
 
     public constructor(
         public readonly channelId: string,
@@ -67,16 +86,28 @@ export class LingyaAgentsUserClient {
         private readonly signedFetch: typeof fetch,
         private readonly baseUrl: string,
     ) {
-        this.chat = new ChatApi(configuration);
-        this.configuration = new ConfigurationApi(configuration);
-        this.conversations = new ConversationsApi(configuration);
-        this.events = new EventsApi(configuration);
-        this.files = new FilesApi(configuration);
-        this.interactions = new InteractionsApi(configuration);
-        this.knowledge = new KnowledgeApi(configuration);
-        this.messages = new MessagesApi(configuration);
-        this.sql = new SQLApi(configuration);
-        this.workspace = new WorkspaceApi(configuration);
+        const chat = new ChatApi(configuration);
+        const configurationApi = new ConfigurationApi(configuration);
+        const conversations = new ConversationsApi(configuration);
+        const events = new EventsApi(configuration);
+        const files = new FilesApi(configuration);
+        const interactions = new InteractionsApi(configuration);
+        const knowledge = new KnowledgeApi(configuration);
+        const messages = new MessagesApi(configuration);
+        const sql = new SQLApi(configuration);
+        const workspace = new WorkspaceApi(configuration);
+        this.lowLevel = new LingyaAgentsLowLevelApis(configurationApi, chat, conversations, sql, messages, events, interactions, files, knowledge, workspace);
+        const rawRequest = this.rawRequest.bind(this);
+        this.chat = new LingyaChatApi(channelId, chat, rawRequest);
+        this.configuration = new LingyaConfigurationApi(channelId, configurationApi);
+        this.conversations = new LingyaConversationsApi(channelId, conversations);
+        this.events = new LingyaEventsApi(channelId, events);
+        this.files = new LingyaFilesApi(channelId, files);
+        this.interactions = new LingyaInteractionsApi(channelId, interactions);
+        this.knowledge = new LingyaKnowledgeApi(channelId, knowledge);
+        this.messages = new LingyaMessagesApi(channelId, messages);
+        this.sql = new LingyaSqlApi(channelId, sql);
+        this.workspace = new LingyaWorkspaceApi(channelId, workspace);
     }
 
     /**
@@ -89,6 +120,7 @@ export class LingyaAgentsUserClient {
      * @returns 调用方指定的响应类型。
      * @throws [LingyaApiError] 当服务端返回非 2xx 状态。
      */
+    /** @deprecated 使用对应的业务分组方法。 / Use the matching grouped facade operation. */
     public async request<T>(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams): Promise<T> {
         const response = await this.rawRequest(method, suffix, bodyJson, query, 'application/json');
         return await response.json() as T;
@@ -103,6 +135,7 @@ export class LingyaAgentsUserClient {
      * @param query - 保留顺序的查询参数。
      * @returns 2xx HTTP 状态码。
      */
+    /** @deprecated 使用对应的业务分组方法。 / Use the matching grouped facade operation. */
     public async requestStatus(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams): Promise<number> {
         return (await this.rawRequest(method, suffix, bodyJson, query, 'application/json')).status;
     }
@@ -115,6 +148,7 @@ export class LingyaAgentsUserClient {
      * @param query - 保留顺序的查询参数。
      * @returns 未经文本转换的响应字节。
      */
+    /** @deprecated 使用对应的业务分组方法。 / Use the matching grouped facade operation. */
     public async requestBinary(method: string, suffix: string, query?: URLSearchParams): Promise<Uint8Array> {
         const response = await this.rawRequest(method, suffix, undefined, query, 'application/octet-stream');
         return new Uint8Array(await response.arrayBuffer());
@@ -127,10 +161,9 @@ export class LingyaAgentsUserClient {
      * @param messageId - 触发本次生成的消息 ID。
      * @returns 支持取消的异步事件序列；未知 type 保留 `rawJson`。
      */
-    public async *streamChatEvents(conversationId: string, messageId: string): AsyncGenerator<LingyaAiChatBriefEvent> {
-        const suffix = `/conversations/${encodeURIComponent(conversationId)}/stream`;
-        const response = await this.rawRequest('POST', suffix, JSON.stringify({ messageId }), undefined, 'text/event-stream');
-        for await (const data of decodeSse(response)) yield decodeAiChatBriefEvent(data);
+    /** @deprecated 使用 `chat.streamChatEvents(conversationId, { messageId })`。 / Use the channel-bound chat facade. */
+    public streamChatEvents(conversationId: string, messageId: string): AsyncGenerator<LingyaAiChatBriefEvent> {
+        return this.chat.streamChatEvents(conversationId, { messageId });
     }
 
     /**
@@ -146,12 +179,13 @@ export class LingyaAgentsUserClient {
      * @returns 成功的原始 Fetch Response。
      * @throws [LingyaApiError] 当服务端返回非 2xx 状态。
      */
-    public async rawRequest(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams, accept = 'application/json'): Promise<Response> {
+    /** @deprecated 使用 `lowLevel`，或使用对应的业务分组方法。 / Use `lowLevel` or a grouped facade operation. */
+    public async rawRequest(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams, accept = 'application/json', requestId?: string): Promise<Response> {
         const root = `${this.baseUrl.replace(/\/+$/, '')}/api/agents/channel/openapi/v1/${encodeURIComponent(this.channelId)}/chat`;
         const url = `${root}${suffix}${query === undefined || query.size === 0 ? '' : `?${query.toString()}`}`;
         const response = await this.signedFetch(url, {
             method,
-            headers: { Accept: accept, ...(bodyJson === undefined ? {} : { 'Content-Type': 'application/json' }) },
+            headers: { Accept: accept, ...(bodyJson === undefined ? {} : { 'Content-Type': 'application/json' }), ...(requestId === undefined ? {} : { 'X-Request-ID': requestId }) },
             body: bodyJson,
         });
         if (!response.ok) throw new LingyaApiError(method, suffix, response.status, await response.text());

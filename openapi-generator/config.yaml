@@ -1,7 +1,7 @@
 generatorName: typescript-fetch
 additionalProperties:
   npmName: "@lingya-ai/agents-sdk"
-  npmVersion: 0.1.2
+  npmVersion: 0.3.0
   supportsES6: true
   typescriptThreePlus: true
   hideGenerationTimestamp: true

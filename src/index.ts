@@ -4,6 +4,7 @@ export * from './runtime';
 export * from './apis/index';
 export * from './models/index';
 export * from './client';
+export * from './bound';
 export * from './hmac';
 export * from './sse';
 export * from './events';
