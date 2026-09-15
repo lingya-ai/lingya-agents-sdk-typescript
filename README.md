@@ -11,6 +11,9 @@ Installation
 npm install @lingya-ai/agents-sdk
 ```
 
+包同时支持 CommonJS `require`、ES module `import` 与 TypeScript 类型声明，运行时要求 Node.js 20 或更高版本。
+The package supports CommonJS `require`, ES module `import`, and TypeScript declarations, and requires Node.js 20 or later.
+
 ## 调用与 SSE
 Calls and SSE
 
