@@ -22,7 +22,7 @@ jobs:
           repository: lingya-ai/lingya-agents-openapi
           ref: v0.1.3
           path: lingya-agents-openapi
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "24.15.0"
           registry-url: "https://registry.npmjs.org"
