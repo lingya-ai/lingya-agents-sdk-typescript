@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- Rename the primary API to `AgentsClient`, `AgentsUserClient`, `ApiError`, and unprefixed group facades.
+- Keep the 0.3.x `Lingya*` names as compatibility aliases.
+- Rewrite the README as a usage-only bilingual guide.
+
 ## 0.3.0
 
 - Bind `channelId` once when constructing `LingyaAgentsClient`.

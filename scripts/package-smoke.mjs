@@ -46,24 +46,24 @@ try {
 
   execFileSync(process.execPath, [
     '-e',
-    "const sdk = require('@lingya-ai/agents-sdk'); if (typeof sdk.LingyaAgentsClient !== 'function') throw new Error('CommonJS export missing');",
+    "const sdk = require('@lingya-ai/agents-sdk'); if (typeof sdk.AgentsClient !== 'function') throw new Error('CommonJS export missing');",
   ], { cwd: consumerRoot, stdio: 'inherit' });
 
   execFileSync(process.execPath, [
     '--input-type=module',
     '-e',
-    "import('@lingya-ai/agents-sdk').then((sdk) => { if (typeof sdk.LingyaAgentsClient !== 'function') throw new Error('ES module export missing'); });",
+    "import('@lingya-ai/agents-sdk').then((sdk) => { if (typeof sdk.AgentsClient !== 'function') throw new Error('ES module export missing'); });",
   ], { cwd: consumerRoot, stdio: 'inherit' });
 
   writeFileSync(join(consumerRoot, 'consumer.ts'), `
-import { LingyaAgentsClient, type LingyaAiChatBriefEvent } from '@lingya-ai/agents-sdk';
+import { AgentsClient, type AiChatBriefEvent } from '@lingya-ai/agents-sdk';
 
-const client = new LingyaAgentsClient('https://tenant.example.com', 'channel-id', {
+const client = new AgentsClient('https://tenant.example.com', 'channel-id', {
   accessKey: 'test-access-key',
   secretKey: 'test-secret-key',
 });
 const user = client.forUser('external-user-id');
-declare const event: LingyaAiChatBriefEvent;
+declare const event: AiChatBriefEvent;
 void user.chat;
 void event.type;
 `);

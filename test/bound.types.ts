@@ -1,8 +1,8 @@
-import type { LingyaAgentsUserClient } from '../src/client';
+import type { AgentsUserClient } from '../src/client';
 
-declare const user: LingyaAgentsUserClient;
+declare const user: AgentsUserClient;
 
 user.chat.createChat({ query: '你好' });
 
-// @ts-expect-error channelId is bound by LingyaAgentsClient and is not accepted here.
+// @ts-expect-error channelId is bound by AgentsClient and is not accepted here.
 user.chat.createChat({ channelId: 'duplicate', aiChatInput: { query: '你好' } });

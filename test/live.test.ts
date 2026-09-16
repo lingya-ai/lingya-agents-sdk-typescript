@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import test from 'node:test';
-import { LingyaAgentsClient, LingyaApiError } from '../src/client';
+import { AgentsClient, ApiError } from '../src/client';
 import { ResponseError } from '../src/runtime';
 
 interface Endpoint { method: string; path: string }
@@ -17,7 +17,7 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
     const channelId = process.env.LINGYA_LIVE_CHANNEL_ID;
     if (!accessKey || !secretKey || !baseUrl || !channelId) return context.skip('live environment variables are required');
 
-    const user = new LingyaAgentsClient(baseUrl, channelId, { accessKey, secretKey })
+    const user = new AgentsClient(baseUrl, channelId, { accessKey, secretKey })
         .forUser(process.env.LINGYA_LIVE_EXTERNAL_USER_ID ?? 'lingya-typescript-sdk-all-endpoints');
     const results: Result[] = [];
     const seen = new Set<string>();
@@ -38,7 +38,7 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
             await action();
             throw new Error(`${method} ${suffix} unexpectedly succeeded`);
         } catch (error) {
-            const status = error instanceof LingyaApiError
+            const status = error instanceof ApiError
                 ? error.status
                 : error instanceof ResponseError
                     ? error.response.status

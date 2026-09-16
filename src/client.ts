@@ -1,19 +1,19 @@
 import { Configuration } from './runtime';
 import { ChatApi, ConfigurationApi, ConversationsApi, EventsApi, FilesApi, InteractionsApi, KnowledgeApi, MessagesApi, SQLApi, WorkspaceApi } from './apis';
 import { createSignedFetch, type OpenApiCredentials } from './hmac';
-import { type LingyaAiChatBriefEvent } from './events';
+import { type AiChatBriefEvent } from './events';
 import {
-    LingyaAgentsLowLevelApis,
-    LingyaChatApi,
-    LingyaConfigurationApi,
-    LingyaConversationsApi,
-    LingyaEventsApi,
-    LingyaFilesApi,
-    LingyaInteractionsApi,
-    LingyaKnowledgeApi,
-    LingyaMessagesApi,
-    LingyaSqlApi,
-    LingyaWorkspaceApi,
+    AgentsLowLevelApis,
+    ChatApi as BoundChatApi,
+    ConfigurationApi as BoundConfigurationApi,
+    ConversationsApi as BoundConversationsApi,
+    EventsApi as BoundEventsApi,
+    FilesApi as BoundFilesApi,
+    InteractionsApi as BoundInteractionsApi,
+    KnowledgeApi as BoundKnowledgeApi,
+    MessagesApi as BoundMessagesApi,
+    SqlApi,
+    WorkspaceApi as BoundWorkspaceApi,
 } from './bound';
 
 /**
@@ -21,7 +21,7 @@ import {
  *
  * 客户端保存 channel 范围的凭证，但只有 [forUser] 创建的用户客户端可以发起请求。
  */
-export class LingyaAgentsClient {
+export class AgentsClient {
     /**
      * 创建 channel 范围的客户端。 / Creates a channel-scoped client.
      *
@@ -43,42 +43,42 @@ export class LingyaAgentsClient {
      * @param externalUserId - 调用方系统的稳定用户 ID，UTF-8 编码后为 1..256 字节且不能含 NUL。
      * @returns 注入用户身份并可调用全部契约 API 的客户端。
      */
-    public forUser(externalUserId: string): LingyaAgentsUserClient {
+    public forUser(externalUserId: string): AgentsUserClient {
         const signedFetch = createSignedFetch(this.credentials, externalUserId);
         const configuration = new Configuration({ basePath: this.baseUrl.replace(/\/+$/, ''), fetchApi: signedFetch });
-        return new LingyaAgentsUserClient(this.channelId, configuration, signedFetch, this.baseUrl);
+        return new AgentsUserClient(this.channelId, configuration, signedFetch, this.baseUrl);
     }
 }
 
 /** 已绑定外部用户的强类型 API 集合。 / Strongly typed API collection bound to one external user. */
-export class LingyaAgentsUserClient {
+export class AgentsUserClient {
     /** 发起新聊天和流探针。 / Starts chats and stream probes. */
-    public readonly chat: LingyaChatApi;
+    public readonly chat: BoundChatApi;
     /** 读取 Agent 与会话配置。 / Reads Agent and conversation configuration. */
-    public readonly configuration: LingyaConfigurationApi;
+    public readonly configuration: BoundConfigurationApi;
     /** 管理会话、状态、分享和异步任务。 / Manages conversations, status, shares, and async tasks. */
-    public readonly conversations: LingyaConversationsApi;
+    public readonly conversations: BoundConversationsApi;
     /** 查询已持久化事件。 / Reads persisted events. */
-    public readonly events: LingyaEventsApi;
+    public readonly events: BoundEventsApi;
     /** 管理附件与预签名 URL。 / Manages attachments and pre-signed URLs. */
-    public readonly files: LingyaFilesApi;
+    public readonly files: BoundFilesApi;
     /** 回答用户问题并处理计划审批。 / Handles user answers and plan approval. */
-    public readonly interactions: LingyaInteractionsApi;
+    public readonly interactions: BoundInteractionsApi;
     /** 查询引用元数据。 / Reads citation metadata. */
-    public readonly knowledge: LingyaKnowledgeApi;
+    public readonly knowledge: BoundKnowledgeApi;
     /** 查询消息并控制排队消息。 / Reads messages and controls queued messages. */
-    public readonly messages: LingyaMessagesApi;
+    public readonly messages: BoundMessagesApi;
     /** 查询、导出 SQL 结果与图表数据。 / Reads and exports SQL results and chart data. */
-    public readonly sql: LingyaSqlApi;
+    public readonly sql: SqlApi;
     /** 查询工作区文件及预览。 / Reads workspace files and previews. */
-    public readonly workspace: LingyaWorkspaceApi;
+    public readonly workspace: BoundWorkspaceApi;
 
     /**
      * 兼容旧版本的原始生成 API；正常业务调用应使用绑定门面。 / Raw generated APIs retained for migration only.
      *
      * @deprecated 将在 1.0 移除。 / Scheduled for removal in 1.0.
      */
-    public readonly lowLevel: LingyaAgentsLowLevelApis;
+    public readonly lowLevel: AgentsLowLevelApis;
 
     public constructor(
         public readonly channelId: string,
@@ -96,18 +96,18 @@ export class LingyaAgentsUserClient {
         const messages = new MessagesApi(configuration);
         const sql = new SQLApi(configuration);
         const workspace = new WorkspaceApi(configuration);
-        this.lowLevel = new LingyaAgentsLowLevelApis(configurationApi, chat, conversations, sql, messages, events, interactions, files, knowledge, workspace);
+        this.lowLevel = new AgentsLowLevelApis(configurationApi, chat, conversations, sql, messages, events, interactions, files, knowledge, workspace);
         const rawRequest = this.rawRequest.bind(this);
-        this.chat = new LingyaChatApi(channelId, chat, rawRequest);
-        this.configuration = new LingyaConfigurationApi(channelId, configurationApi);
-        this.conversations = new LingyaConversationsApi(channelId, conversations);
-        this.events = new LingyaEventsApi(channelId, events);
-        this.files = new LingyaFilesApi(channelId, files);
-        this.interactions = new LingyaInteractionsApi(channelId, interactions);
-        this.knowledge = new LingyaKnowledgeApi(channelId, knowledge);
-        this.messages = new LingyaMessagesApi(channelId, messages);
-        this.sql = new LingyaSqlApi(channelId, sql);
-        this.workspace = new LingyaWorkspaceApi(channelId, workspace);
+        this.chat = new BoundChatApi(channelId, chat, rawRequest);
+        this.configuration = new BoundConfigurationApi(channelId, configurationApi);
+        this.conversations = new BoundConversationsApi(channelId, conversations);
+        this.events = new BoundEventsApi(channelId, events);
+        this.files = new BoundFilesApi(channelId, files);
+        this.interactions = new BoundInteractionsApi(channelId, interactions);
+        this.knowledge = new BoundKnowledgeApi(channelId, knowledge);
+        this.messages = new BoundMessagesApi(channelId, messages);
+        this.sql = new SqlApi(channelId, sql);
+        this.workspace = new BoundWorkspaceApi(channelId, workspace);
     }
 
     /**
@@ -118,7 +118,7 @@ export class LingyaAgentsUserClient {
      * @param bodyJson - 最终发送并参与签名的 UTF-8 JSON 字符串；无请求体时省略。
      * @param query - 已按最终顺序组装的查询参数，允许重复键。
      * @returns 调用方指定的响应类型。
-     * @throws [LingyaApiError] 当服务端返回非 2xx 状态。
+     * @throws [ApiError] 当服务端返回非 2xx 状态。
      */
     /** @deprecated 使用对应的业务分组方法。 / Use the matching grouped facade operation. */
     public async request<T>(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams): Promise<T> {
@@ -162,7 +162,7 @@ export class LingyaAgentsUserClient {
      * @returns 支持取消的异步事件序列；未知 type 保留 `rawJson`。
      */
     /** @deprecated 使用 `chat.streamChatEvents(conversationId, { messageId })`。 / Use the channel-bound chat facade. */
-    public streamChatEvents(conversationId: string, messageId: string): AsyncGenerator<LingyaAiChatBriefEvent> {
+    public streamChatEvents(conversationId: string, messageId: string): AsyncGenerator<AiChatBriefEvent> {
         return this.chat.streamChatEvents(conversationId, { messageId });
     }
 
@@ -177,7 +177,7 @@ export class LingyaAgentsUserClient {
      * @param query - 最终查询参数；顺序和重复键均参与签名。
      * @param accept - 精确的 Accept 值，例如 `application/json`、`text/event-stream` 或 `text/csv`。
      * @returns 成功的原始 Fetch Response。
-     * @throws [LingyaApiError] 当服务端返回非 2xx 状态。
+     * @throws [ApiError] 当服务端返回非 2xx 状态。
      */
     /** @deprecated 使用 `lowLevel`，或使用对应的业务分组方法。 / Use `lowLevel` or a grouped facade operation. */
     public async rawRequest(method: string, suffix: string, bodyJson?: string, query?: URLSearchParams, accept = 'application/json', requestId?: string): Promise<Response> {
@@ -188,15 +188,22 @@ export class LingyaAgentsUserClient {
             headers: { Accept: accept, ...(bodyJson === undefined ? {} : { 'Content-Type': 'application/json' }), ...(requestId === undefined ? {} : { 'X-Request-ID': requestId }) },
             body: bodyJson,
         });
-        if (!response.ok) throw new LingyaApiError(method, suffix, response.status, await response.text());
+        if (!response.ok) throw new ApiError(method, suffix, response.status, await response.text());
         return response;
     }
 }
 
 /** 不含凭证的 HTTP 错误。 / HTTP failure that never includes credentials. */
-export class LingyaApiError extends Error {
+export class ApiError extends Error {
     public constructor(public readonly method: string, public readonly path: string, public readonly status: number, public readonly responseBody: string) {
         super(`${method} ${path} returned HTTP ${status}`);
-        this.name = 'LingyaApiError';
+        this.name = 'ApiError';
     }
 }
+
+/** @deprecated Use [AgentsClient]. */
+export { AgentsClient as LingyaAgentsClient };
+/** @deprecated Use [AgentsUserClient]. */
+export { AgentsUserClient as LingyaAgentsUserClient };
+/** @deprecated Use [ApiError]. */
+export { ApiError as LingyaApiError };

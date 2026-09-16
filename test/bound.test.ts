@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { LingyaAgentsClient } from '../src/client';
+import { AgentsClient } from '../src/client';
 
 interface OperationManifest {
     operationId: string;
@@ -34,7 +34,7 @@ test('uses the channel selected by the root client exactly once', async () => {
         }), { status: 201, headers: { 'Content-Type': 'application/json' } });
     };
     try {
-        const user = new LingyaAgentsClient('https://example.test', 'channel/一', {
+        const user = new AgentsClient('https://example.test', 'channel/一', {
             accessKey: 'abcdefghijklmnopqrstuvwxyzABCDEF',
             secretKey: 'test-secret',
         }).forUser('external-user');
