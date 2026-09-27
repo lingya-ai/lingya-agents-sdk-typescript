@@ -34,7 +34,7 @@ jobs:
           printf 'lingya-ai/lingya-agents-openapi@%s\n' "$CONTRACT_TAG" > CONTRACT_VERSION
       - run: npm ci --registry=https://registry.npmmirror.com
       - run: npm run check
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/contract-${{ env.CONTRACT_TAG }}
           commit-message: "chore: update contract to ${{ env.CONTRACT_TAG }}"
