@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 - 2026-09-27
+
+- Sync contract v0.1.5 and expose asynchronous-task sync plus subagent list, sync, detail, result, and cancellation methods.
+- Regenerate public API clients and models against the current contract schemas.
+
 ## 0.4.0
 
 - Rename the primary API to `AgentsClient`, `AgentsUserClient`, `ApiError`, and unprefixed group facades.

@@ -8,7 +8,7 @@ Use this SDK to call Lingya Agents OpenAPI from a trusted Node.js server.
 Installation
 
 ```bash
-npm install @lingya-ai/agents-sdk@0.4.0
+npm install @lingya-ai/agents-sdk@0.5.0
 ```
 
 运行环境需要 Node.js 20 或更高版本。

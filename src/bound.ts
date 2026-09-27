@@ -3,7 +3,7 @@
 // These facades bind channelId once so application code cannot accidentally sign a
 // request for a channel that differs from the client configuration.
 
-import { ConfigurationApi as GeneratedConfigurationApi, ChatApi as GeneratedChatApi, ConversationsApi as GeneratedConversationsApi, SQLApi as GeneratedSQLApi, MessagesApi as GeneratedMessagesApi, EventsApi as GeneratedEventsApi, InteractionsApi as GeneratedInteractionsApi, FilesApi as GeneratedFilesApi, KnowledgeApi as GeneratedKnowledgeApi, WorkspaceApi as GeneratedWorkspaceApi, type GetAgentsConfigRequest, type GetConversationConfigRequest, type CreateChatRequest, type ContinueChatRequest, type DeleteConversationRequest, type StreamChatEventsRequest, type ProbeEventStreamRequest, type InterruptConversationRequest, type CompactConversationRequest, type GetConversationContextUsageRequest, type ListConversationsRequest, type ListActiveConversationsRequest, type ListUnreadConversationsRequest, type QueryConversationActivitiesRequest, type MarkConversationReadRequest, type GetConversationStatsRequest, type GetConversationTitleRequest, type UpdateConversationTitleRequest, type UpdateConversationStatusRequest, type GetSqlQueryResultRequest, type GetSqlQueryChartDataRequest, type ExportSqlQueryResultRequest, type ListConversationMessagesRequest, type GetConversationMessageRequest, type ListConversationAsyncTasksRequest, type GetConversationAsyncTaskRequest, type CancelQueuedMessageRequest, type GetChatEventsRequest, type GetChatEventsBatchRequest, type ListConversationSharesRequest, type CreateConversationShareRequest, type RevokeConversationShareRequest, type ApprovePlanRequest, type GetPlanStatusRequest, type GetUserInputStatusRequest, type AnswerUserInputRequest, type CreatePreSignedUploadRequest, type ConfirmPreSignedUploadRequest, type CreateFileByContentMd5Request, type FileExistsByContentMd5Request, type GetConversationFilePreviewRequest, type GetPlanIntermediateFilePreviewRequest, type GetCitationMetadataBatchRequest, type GetCitationMetadataRequest, type ListWorkspaceArtifactsRequest, type GetWorkspaceFilePreviewRequest } from './apis';
+import { ConfigurationApi as GeneratedConfigurationApi, ChatApi as GeneratedChatApi, ConversationsApi as GeneratedConversationsApi, SQLApi as GeneratedSQLApi, MessagesApi as GeneratedMessagesApi, EventsApi as GeneratedEventsApi, InteractionsApi as GeneratedInteractionsApi, FilesApi as GeneratedFilesApi, KnowledgeApi as GeneratedKnowledgeApi, WorkspaceApi as GeneratedWorkspaceApi, type GetAgentsConfigRequest, type GetConversationConfigRequest, type CreateChatRequest, type ContinueChatRequest, type DeleteConversationRequest, type StreamChatEventsRequest, type ProbeEventStreamRequest, type InterruptConversationRequest, type CompactConversationRequest, type GetConversationContextUsageRequest, type ListConversationsRequest, type ListActiveConversationsRequest, type ListUnreadConversationsRequest, type QueryConversationActivitiesRequest, type MarkConversationReadRequest, type GetConversationStatsRequest, type GetConversationTitleRequest, type UpdateConversationTitleRequest, type UpdateConversationStatusRequest, type GetSqlQueryResultRequest, type GetSqlQueryChartDataRequest, type ExportSqlQueryResultRequest, type ListConversationMessagesRequest, type GetConversationMessageRequest, type ListConversationAsyncTasksRequest, type SyncConversationAsyncTasksRequest, type GetConversationAsyncTaskRequest, type ListConversationSubagentsRequest, type SyncConversationSubagentsRequest, type GetConversationSubagentRequest, type CancelConversationSubagentRequest, type GetConversationSubagentResultRequest, type CancelQueuedMessageRequest, type GetChatEventsRequest, type GetChatEventsBatchRequest, type ListConversationSharesRequest, type CreateConversationShareRequest, type RevokeConversationShareRequest, type ApprovePlanRequest, type GetPlanStatusRequest, type GetUserInputStatusRequest, type AnswerUserInputRequest, type CreatePreSignedUploadRequest, type ConfirmPreSignedUploadRequest, type CreateFileByContentMd5Request, type FileExistsByContentMd5Request, type GetConversationFilePreviewRequest, type GetPlanIntermediateFilePreviewRequest, type GetCitationMetadataBatchRequest, type GetCitationMetadataRequest, type ListWorkspaceArtifactsRequest, type GetWorkspaceFilePreviewRequest } from './apis';
 import { ChatStreamProbeEventFromJSON, type ChatStreamProbeEvent } from './models/ChatStreamProbeEvent';
 import { decodeAiChatBriefEvent, type AiChatBriefEvent } from './events';
 import { decodeSse } from './sse';
@@ -33,6 +33,15 @@ export type ListConversationMessagesOptions = Omit<ListConversationMessagesReque
 
 /** Query values and optional request headers that are not bound by the client. */
 export type ListConversationAsyncTasksOptions = Omit<ListConversationAsyncTasksRequest, 'channelId' | 'conversationId'>;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type SyncConversationAsyncTasksOptions = Omit<SyncConversationAsyncTasksRequest, 'channelId' | 'conversationId'>;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListConversationSubagentsOptions = Omit<ListConversationSubagentsRequest, 'channelId' | 'conversationId'>;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type SyncConversationSubagentsOptions = Omit<SyncConversationSubagentsRequest, 'channelId' | 'conversationId'>;
 
 /** Query values and optional request headers that are not bound by the client. */
 export type GetChatEventsOptions = Omit<GetChatEventsRequest, 'channelId'>;
@@ -424,6 +433,17 @@ export class MessagesApi {
     }
 
     /**
+     * 增量同步异步任务 / Sync asynchronous task updates
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param options - 查询参数与可选请求头。 / Query parameters and optional request headers.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public syncConversationAsyncTasks(conversationId: SyncConversationAsyncTasksRequest['conversationId'], options: SyncConversationAsyncTasksOptions = {}): ReturnType<GeneratedMessagesApi['syncConversationAsyncTasks']> {
+        return this.delegate.syncConversationAsyncTasks({ channelId: this.channelId, conversationId, ...options });
+    }
+
+    /**
      * 读取异步任务 / Get an asynchronous task
      *
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
@@ -432,6 +452,61 @@ export class MessagesApi {
      */
     public getConversationAsyncTask(conversationId: GetConversationAsyncTaskRequest['conversationId'], asyncTaskId: GetConversationAsyncTaskRequest['asyncTaskId']): ReturnType<GeneratedMessagesApi['getConversationAsyncTask']> {
         return this.delegate.getConversationAsyncTask({ channelId: this.channelId, conversationId, asyncTaskId });
+    }
+
+    /**
+     * 分页查询子 Agent 任务 / List subagent tasks
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param options - 查询参数与可选请求头。 / Query parameters and optional request headers.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public listConversationSubagents(conversationId: ListConversationSubagentsRequest['conversationId'], options: ListConversationSubagentsOptions = {}): ReturnType<GeneratedMessagesApi['listConversationSubagents']> {
+        return this.delegate.listConversationSubagents({ channelId: this.channelId, conversationId, ...options });
+    }
+
+    /**
+     * 增量同步子 Agent 状态 / Sync subagent task updates
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param options - 查询参数与可选请求头。 / Query parameters and optional request headers.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public syncConversationSubagents(conversationId: SyncConversationSubagentsRequest['conversationId'], options: SyncConversationSubagentsOptions = {}): ReturnType<GeneratedMessagesApi['syncConversationSubagents']> {
+        return this.delegate.syncConversationSubagents({ channelId: this.channelId, conversationId, ...options });
+    }
+
+    /**
+     * 读取子 Agent 状态 / Get a subagent task
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getConversationSubagent(conversationId: GetConversationSubagentRequest['conversationId'], subagentTaskId: GetConversationSubagentRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['getConversationSubagent']> {
+        return this.delegate.getConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId });
+    }
+
+    /**
+     * 取消子 Agent 任务 / Cancel a subagent task
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public cancelConversationSubagent(conversationId: CancelConversationSubagentRequest['conversationId'], subagentTaskId: CancelConversationSubagentRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['cancelConversationSubagent']> {
+        return this.delegate.cancelConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId });
+    }
+
+    /**
+     * 读取子 Agent 结果 / Get a subagent result
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getConversationSubagentResult(conversationId: GetConversationSubagentResultRequest['conversationId'], subagentTaskId: GetConversationSubagentResultRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['getConversationSubagentResult']> {
+        return this.delegate.getConversationSubagentResult({ channelId: this.channelId, conversationId, subagentTaskId });
     }
 
     /**

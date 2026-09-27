@@ -14,7 +14,7 @@ test('generates one channel-bound method for every contract operation', async ()
         .map((match) => match[1])
         .filter((name) => name !== 'constructor');
 
-    assert.equal(manifest.length, 46);
+    assert.equal(manifest.length, 52);
     assert.deepEqual(declarations.sort(), manifest.map((operation) => operation.operationId).sort());
     for (const declaration of source.matchAll(/^    public (?!constructor\b)(?:async \*|async )?\w+\(([^)]*)\)/gm)) {
         assert(!declaration[1].includes('channelId'), `bound signature leaked channelId: ${declaration[0]}`);

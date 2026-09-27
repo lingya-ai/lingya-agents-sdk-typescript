@@ -10,7 +10,7 @@ interface Result extends Endpoint { requestId: string; status: number; outcome: 
 const basePath = '/api/agents/channel/openapi/v1/{channelId}/chat';
 const domainStatuses = new Set([400, 403, 404, 409, 422]);
 
-test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, async (context) => {
+test('真实服务覆盖契约中的全部 52 个接口', { timeout: 240_000 }, async (context) => {
     const accessKey = process.env.OPENAPI_AK;
     const secretKey = process.env.OPENAPI_SK;
     const baseUrl = process.env.LINGYA_LIVE_BASE_URL;
@@ -80,7 +80,13 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
         await invoke('DELETE', `/conversations/${first.conversationId}/interrupt`, () => user.chat.interruptConversation(first.conversationId));
         await invoke('POST', `/conversations/${first.conversationId}/compact`, () => user.chat.compactConversation(first.conversationId));
         await invoke('GET', `/conversations/${first.conversationId}/async-tasks`, () => user.messages.listConversationAsyncTasks(first.conversationId));
+        await invoke('GET', `/conversations/${first.conversationId}/async-tasks/sync`, () => user.messages.syncConversationAsyncTasks(first.conversationId));
         await expectedDomain('GET', `/conversations/${first.conversationId}/async-tasks/missing-async-task`, () => user.messages.getConversationAsyncTask(first.conversationId, 'missing-async-task'));
+        await invoke('GET', `/conversations/${first.conversationId}/subagents`, () => user.messages.listConversationSubagents(first.conversationId));
+        await invoke('GET', `/conversations/${first.conversationId}/subagents/sync`, () => user.messages.syncConversationSubagents(first.conversationId));
+        await expectedDomain('GET', `/conversations/${first.conversationId}/subagents/missing-subagent`, () => user.messages.getConversationSubagent(first.conversationId, 'missing-subagent'));
+        await expectedDomain('GET', `/conversations/${first.conversationId}/subagents/missing-subagent/result`, () => user.messages.getConversationSubagentResult(first.conversationId, 'missing-subagent'));
+        await expectedDomain('DELETE', `/conversations/${first.conversationId}/subagents/missing-subagent`, () => user.messages.cancelConversationSubagent(first.conversationId, 'missing-subagent'));
         await expectedDomain('DELETE', `/conversations/${first.conversationId}/messages/${first.messageId}/queue`, () => user.messages.cancelQueuedMessage(first.conversationId, first.messageId));
         const share = await invoke('POST', `/conversations/${first.conversationId}/shares`, () => user.conversations.createConversationShare(first.conversationId, {}), 201);
         await invoke('GET', `/conversations/${first.conversationId}/shares`, () => user.conversations.listConversationShares(first.conversationId));
@@ -114,7 +120,7 @@ test('真实服务覆盖契约中的全部 46 个接口', { timeout: 240_000 }, 
     }
 
     const published = await publishedEndpoints();
-    assert.equal(seen.size, 46);
+    assert.equal(seen.size, 52);
     assert.deepEqual([...seen].sort(), published.sort());
 });
 
@@ -140,7 +146,8 @@ async function writeReport(results: Result[]): Promise<void> {
 function canonicalSuffix(suffix: string): string {
     return suffix
         .replace(/^\/conversations\/(?!active(?:\/|$)|unread(?:\/|$)|stats(?:\/|$)|activity(?:\/|$))[^/]+/, '/conversations/{conversationId}')
-        .replace(/\/async-tasks\/[^/]+/, '/async-tasks/{asyncTaskId}')
+        .replace(/\/async-tasks\/(?!sync(?:\/|$))[^/]+/, '/async-tasks/{asyncTaskId}')
+        .replace(/\/subagents\/[^/]+/, '/subagents/{subagentTaskId}')
         .replace(/\/messages\/[^/]+/, '/messages/{messageId}')
         .replace(/\/plan-intermediate-files\/[^/]+/, '/plan-intermediate-files/{fileId}')
         .replace(/^\/conversations\/\{conversationId}\/[f]iles\/[^/]+/, '/conversations/{conversationId}/files/{fileId}')
