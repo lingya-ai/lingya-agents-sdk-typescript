@@ -1,3 +1,4 @@
+import { fetchResponse } from './lifecycle';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 /** 服务端 OpenAPI 凭证。Secret 不会被发送或写入异常。 / Trusted-server credentials; the secret is never transmitted. */
@@ -17,7 +18,7 @@ export interface OpenApiCredentials {
  * @param externalUserId - UTF-8 编码后为 1..256 字节且不含 NUL 的外部用户 ID。
  * @returns 与原生 fetch 兼容的签名 transport。
  */
-export function createSignedFetch(credentials: OpenApiCredentials, externalUserId: string): typeof fetch {
+export function createSignedFetch(credentials: OpenApiCredentials, externalUserId: string, network: typeof fetch = globalThis.fetch): typeof fetch {
     const userBytes = Buffer.from(externalUserId, 'utf8');
     if (userBytes.length < 1 || userBytes.length > 256 || userBytes.includes(0)) {
         throw new Error('externalUserId must contain 1 to 256 UTF-8 bytes and no NUL');
@@ -47,7 +48,7 @@ export function createSignedFetch(credentials: OpenApiCredentials, externalUserI
         headers.set('X-OpenAPI-Nonce', nonce);
         headers.set('X-OpenAPI-User', encodedUser);
         headers.set('X-OpenAPI-Signature', createHmac('sha256', credentials.secretKey).update(canonical).digest('hex'));
-        return fetch(new Request(request, { headers }));
+        return fetchResponse(network, new Request(request, { headers, redirect: 'error' }));
     };
 }
 

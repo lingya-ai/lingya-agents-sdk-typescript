@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0 - 2026-10-20
+
+- Add injected Fetch/WebSocket factories, cancellation and full-response deadlines, unified ApiError classifications, owned SSE/WebSocket subscriptions, diagnostics and download metadata.
+- Keep browser bundles free of Node HMAC dependencies; add isolated Chromium 102 verification tooling and current-browser integration tests.
+- Add identity-bound HMAC/token construction and independent fresh-token callbacks per request; reject token presign, redact provider errors, and disable token retries/redirects.
+- Add a browser-only TypeScript entry, browser conditional exports, and bundled HTTP/SSE smoke checks.
+- Align with contract v0.1.7: add token issuance, goals, groups, conversation summary, message sync and message plan status.
+- Correct chat modes, pagination, title metadata responses and dynamic message metadata; remove unavailable sharing and internal model events.
+
 ## 0.5.0 - 2026-09-27
 
 - Sync contract v0.1.5 and expose asynchronous-task sync plus subagent list, sync, detail, result, and cancellation methods.

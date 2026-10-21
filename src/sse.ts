@@ -1,34 +1,37 @@
-/**
- * 按 SSE 规范解码分片、多行 data 与心跳。 / Decodes chunked, multiline SSE data while ignoring heartbeats.
- *
- * @param response - Content-Type 为 `text/event-stream` 且 body 未被读取的成功响应。
- * @returns 每个完整事件合并后的 data 字符串；关闭迭代器会取消后续读取。
- * @throws Error 当响应没有可读 body。
- */
-export async function* decodeSse(response: Response): AsyncGenerator<string> {
-    if (response.body === null) throw new Error('SSE response has no body');
-    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-    let buffer = '';
-    let data: string[] = [];
+import { ApiError, abortable, checkSignal } from './lifecycle';
+
+/** Incremental SSE decoding compatible with Chromium 102. */
+export async function* decodeSse(response: Response, signal?: AbortSignal, onComment?: (comment: string) => void): AsyncGenerator<string> {
+    if (!/^text\/event-stream(?:\s*;|\s*$)/i.test(response.headers.get('Content-Type') ?? '') || !response.body) {
+        await response.body?.cancel();
+        throw new ApiError('', '', response.status, '', { kind: 'protocol' });
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8', { fatal: true });
+    let buffer = '', data: string[] = [];
+    const cancel = () => { void reader.cancel().catch(() => undefined); };
+    signal?.addEventListener('abort', cancel, { once: true });
     try {
         for (;;) {
-            const chunk = await reader.read();
-            buffer += chunk.value ?? '';
-            const lines = buffer.split(/\r?\n/);
-            buffer = lines.pop() ?? '';
-            for (const line of lines) {
-                if (line === '') {
-                    if (data.length > 0) yield data.join('\n');
-                    data = [];
-                } else if (line.startsWith('data:')) {
-                    data.push(line.slice(5).replace(/^ /, ''));
-                }
+            checkSignal(signal);
+            const chunk = await abortable(reader.read(), signal);
+            buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
+            let match: RegExpExecArray | null;
+            while ((match = /\r\n|\r|\n/.exec(buffer)) !== null) {
+                if (!chunk.done && match[0] === '\r' && match.index === buffer.length - 1) break;
+                const line = buffer.slice(0, match.index);
+                buffer = buffer.slice(match.index + match[0].length);
+                if (line === '') { if (data.length) yield data.join('\n'); data = []; }
+                else if (line.startsWith(':')) onComment?.(line.slice(1).trim());
+                else if (line === 'data' || line.startsWith('data:')) data.push(line.slice(5).replace(/^ /, ''));
             }
             if (chunk.done) break;
         }
-        if (buffer.startsWith('data:')) data.push(buffer.slice(5).replace(/^ /, ''));
-        if (data.length > 0) yield data.join('\n');
+    } catch (error) {
+        if (error instanceof TypeError && !signal?.aborted) throw new ApiError('', '', undefined, '', { kind: 'protocol' });
+        throw error;
     } finally {
-        reader.releaseLock();
+        signal?.removeEventListener('abort', cancel);
+        try { await reader.cancel(); } finally { reader.releaseLock(); }
     }
 }

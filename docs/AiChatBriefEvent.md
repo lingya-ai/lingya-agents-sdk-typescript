@@ -13,10 +13,6 @@ Name | Type
 `level` | string
 `warning` | string
 `message` | string
-`messages` | [Array&lt;ChatMessage&gt;](ChatMessage.md)
-`chatOptions` | [ChatOptions](ChatOptions.md)
-`assistantMessages` | [Array&lt;AssistantChatMessage&gt;](AssistantChatMessage.md)
-`usage` | [Usage](Usage.md)
 `toolId` | string
 `toolName` | string
 `status` | string
@@ -30,7 +26,7 @@ Name | Type
 `question` | string
 `options` | [Array&lt;AskUserQuestionOption&gt;](AskUserQuestionOption.md)
 `multiple` | boolean
-`serverNow` | string
+`serverNow` | Date
 `timeoutSeconds` | number
 `questionDetails` | string
 `executionTimeMillis` | number
@@ -41,6 +37,54 @@ Name | Type
 `nonFileArtifacts` | [Array&lt;WorkspaceNonFileArtifact&gt;](WorkspaceNonFileArtifact.md)
 `rawJson` | string
 
+## Example
+
+```typescript
+import type { AiChatBriefEvent } from '@lingya-ai/agents-sdk'
+
+// TODO: Update the object below with actual values
+const example = {
+  "type": null,
+  "query": null,
+  "attachments": null,
+  "level": null,
+  "warning": null,
+  "message": null,
+  "toolId": null,
+  "toolName": null,
+  "status": null,
+  "action": null,
+  "summary": null,
+  "extension": null,
+  "toolCallId": null,
+  "subAgentConversationId": null,
+  "subAgentMessageId": null,
+  "questionId": null,
+  "question": null,
+  "options": null,
+  "multiple": null,
+  "serverNow": null,
+  "timeoutSeconds": null,
+  "questionDetails": null,
+  "executionTimeMillis": null,
+  "totalUsage": null,
+  "messageContextUsageRatio": null,
+  "contextWindowUsage": null,
+  "artifacts": null,
+  "nonFileArtifacts": null,
+  "rawJson": null,
+} satisfies AiChatBriefEvent
+
+console.log(example)
+
+// Convert the instance to a JSON string
+const exampleJSON: string = JSON.stringify(example)
+console.log(exampleJSON)
+
+// Parse the JSON string back to an object
+const exampleParsed = JSON.parse(exampleJSON) as AiChatBriefEvent
+console.log(exampleParsed)
+```
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

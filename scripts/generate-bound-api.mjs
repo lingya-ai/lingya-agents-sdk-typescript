@@ -37,22 +37,24 @@ const lines = [
     `import { ${[...groups.map((group) => `${apiClass(group)} as ${generatedApiClass(group)}`), ...requestTypes.map((name) => `type ${name}`)].join(', ')} } from './apis';`,
     "import { ChatStreamProbeEventFromJSON, type ChatStreamProbeEvent } from './models/ChatStreamProbeEvent';",
     "import { decodeAiChatBriefEvent, type AiChatBriefEvent } from './events';",
+    "import { ApiError, execute, RequestScope, normalizeError, downloadResponse, type DownloadResponse, type RequestOptions } from './lifecycle';",
+    "import { finiteSse, type ChatSubscription, type StreamOptions } from './subscription';",
     "import { decodeSse } from './sse';",
     '',
-    'type BoundRawRequest = (method: string, suffix: string, bodyJson: string | undefined, query: URLSearchParams | undefined, accept: string, requestId?: string) => Promise<Response>;',
+    'type BoundRawRequest = (method: string, suffix: string, bodyJson: string | undefined, query: URLSearchParams | undefined, accept: string, requestId?: string, signal?: AbortSignal) => Promise<Response>;',
     '',
 ];
 
 for (const operation of manifest) {
     const optionParams = optionParameters(operation);
-    if (optionParams.length === 0) continue;
+
     const omitted = [
         'channelId',
         ...pathParameters(operation).map((parameter) => parameterProperty(parameter.name)),
         ...(operation.requestBodySchema ? [bodyProperty(operation.requestBodySchema)] : []),
     ];
     lines.push('/** Query values and optional request headers that are not bound by the client. */');
-    lines.push(`export type ${optionType(operation)} = Omit<${requestType(operation.operationId)}, ${omitted.map((name) => `'${name}'`).join(' | ')}>;`);
+    lines.push(`export type ${optionType(operation)} = Omit<${requestType(operation.operationId)}, ${omitted.map((name) => `'${name}'`).join(' | ')}> & ${operation.sse ? 'StreamOptions' : 'RequestOptions'};`);
     lines.push('');
 }
 
@@ -75,7 +77,9 @@ for (const group of groups) {
     lines.push('    public constructor(');
     lines.push('        private readonly channelId: string,');
     lines.push(`        private readonly delegate: ${delegateClass},`);
+    if (className === 'ConfigurationApi') lines.push('        private readonly tokenAuth: boolean = false,');
     if (operations.some((operation) => operation.sse)) lines.push('        private readonly rawRequest: BoundRawRequest,');
+    if (group === 'chat') lines.push("        private readonly subscribe: (conversationId: string, input: StreamChatEventsRequest['aiChatStreamInput'], options: StreamChatEventsOptions) => ChatSubscription,");
     lines.push('    ) {}');
     lines.push('');
 
@@ -86,7 +90,7 @@ for (const group of groups) {
         const inputSchema = operation.requestBodySchema;
         const parameters = paths.map((parameter) => `${parameterProperty(parameter.name)}: ${request}['${parameterProperty(parameter.name)}']`);
         if (inputSchema) parameters.push(`input: ${request}['${bodyProperty(inputSchema)}']`);
-        if (options.length > 0) {
+        {
             const hasRequired = options.some((parameter) => parameter.required);
             parameters.push(`options: ${optionType(operation)}${hasRequired ? '' : ' = {}'}`);
         }
@@ -103,26 +107,31 @@ for (const group of groups) {
         lines.push(`     * @returns ${operation.sse ? '可取消的强类型事件序列。 / A cancellable typed event sequence.' : '契约定义的强类型响应。 / The typed response defined by the contract.'}`);
         lines.push('     */');
         lines.push(`    public ${operation.sse ? 'async *' : isBinary ? 'async ' : ''}${operation.operationId}(${parameters.join(', ')}): ${returnType} {`);
+        if (operation.operationId === 'createOpenApiToken') lines.push("        if (this.tokenAuth) return Promise.reject(new ApiError('POST', '/presign', undefined, '{\"message\":\"presign requires HMAC authentication\"}', { kind: 'authentication' }));");
         const requestFields = ['channelId: this.channelId', ...paths.map((parameter) => parameterProperty(parameter.name))];
         if (inputSchema) requestFields.push(`${bodyProperty(inputSchema)}: input`);
-        if (options.length > 0) requestFields.push('...options');
-        if (operation.sse) {
-            let suffix = operation.relativePath;
-            for (const parameter of paths) suffix = suffix.replace(`{${parameter.name}}`, `\${encodeURIComponent(String(${parameterProperty(parameter.name)}))}`);
-            lines.push(`        const suffix = \`${suffix}\`;`);
-            lines.push(`        const response = await this.rawRequest('${operation.method}', suffix, JSON.stringify(input), undefined, 'text/event-stream', options?.xRequestID);`);
-            lines.push('        for await (const data of decodeSse(response)) {');
-            if (operation.operationId === 'streamChatEvents') lines.push('            yield decodeAiChatBriefEvent(data);');
-            else lines.push('            yield ChatStreamProbeEventFromJSON(JSON.parse(data));');
-            lines.push('        }');
+        for (const parameter of options) requestFields.push(`${parameterProperty(parameter.name)}: options.${parameterProperty(parameter.name)}`);
+        if (operation.sse && operation.operationId === 'streamChatEvents') {
+            lines.push('        yield* this.subscribeChatEvents(conversationId, input, options);');
+        } else if (operation.sse) {
+            lines.push('        try {');
+            lines.push(`            for await (const data of finiteSse(signal => this.rawRequest('${operation.method}', '${operation.relativePath}', JSON.stringify(input), undefined, 'text/event-stream', options.xRequestID, signal), options)) yield ChatStreamProbeEventFromJSON(JSON.parse(data));`);
+            lines.push('        } catch (error) { throw await normalizeError(error); }');
         } else if (isBinary) {
-            lines.push(`        const value = await this.delegate.${operation.operationId}({ ${requestFields.join(', ')} });`);
-            lines.push('        return new Uint8Array(await value.arrayBuffer());');
+            lines.push(`        return (await this.${operation.operationId}WithMetadata(${[...paths.map(p => parameterProperty(p.name)), ...(inputSchema ? ['input'] : []), 'options'].join(', ')})).bytes;`);
         } else {
-            lines.push(`        return this.delegate.${operation.operationId}({ ${requestFields.join(', ')} });`);
+            lines.push(`        return execute(options, signal => this.delegate.${operation.operationId}({ ${requestFields.join(', ')} }, { signal }));`);
         }
         lines.push('    }');
         lines.push('');
+        if (isBinary) {
+            lines.push(`    public ${operation.operationId}WithMetadata(${parameters.join(', ')}): Promise<DownloadResponse> {`);
+            lines.push(`        return execute(options, async signal => downloadResponse((await this.delegate.${operation.operationId}Raw({ ${requestFields.join(', ')} }, { signal })).raw));`);
+            lines.push('    }');
+        }
+    }
+    if (group === 'chat') {
+        lines.push("    public subscribeChatEvents(conversationId: string, input: StreamChatEventsRequest['aiChatStreamInput'], options: StreamChatEventsOptions = {}): ChatSubscription { return this.subscribe(conversationId, input, options); }");
     }
     lines.push('}');
     lines.push('');

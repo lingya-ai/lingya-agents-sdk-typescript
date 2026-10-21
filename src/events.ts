@@ -7,7 +7,7 @@ import type {
 
 const knownEventTypes = new Set([
     'user-query', 'compressor-context-start', 'compressor-context-end', 'compactor-warning', 'manual-interrupt',
-    'error', 'start', 'think', 'chat-client-request', 'chat-client-response', 'message', 'tool-execution',
+    'error', 'start', 'think', 'message', 'tool-execution',
     'tool-execution-sub-agent-call', 'tool-execution-awaiting-user-input', 'end',
 ]);
 const knownToolCategories = new Set([

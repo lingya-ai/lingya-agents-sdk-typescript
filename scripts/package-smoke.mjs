@@ -57,6 +57,14 @@ try {
 
   writeFileSync(join(consumerRoot, 'consumer.ts'), `
 import { AgentsClient, type AiChatBriefEvent } from '@lingya-ai/agents-sdk';
+import { AgentsClient as BrowserClient } from '@lingya-ai/agents-sdk/browser';
+
+const browserClient = new BrowserClient({ baseUrl: 'https://example.test', channelId: 'channel', auth: {
+  type: 'token', tokenProvider: async ({ channelId, signal }) => 'fresh-' + channelId,
+} });
+void browserClient.chat;
+// @ts-expect-error Browser entry never accepts server-side credentials.
+new BrowserClient({ baseUrl: 'https://example.test', channelId: 'channel', auth: { type: 'hmac', accessKey: 'ak', secretKey: 'sk', externalUserId: 'u' } });
 
 const client = new AgentsClient('https://tenant.example.com', 'channel-id', {
   accessKey: 'test-access-key',

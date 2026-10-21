@@ -8,9 +8,9 @@ interface Endpoint { method: string; path: string }
 interface Result extends Endpoint { requestId: string; status: number; outcome: string }
 
 const basePath = '/api/agents/channel/openapi/v1/{channelId}/chat';
-const domainStatuses = new Set([400, 403, 404, 409, 422]);
+const domainStatuses = new Set([400, 403, 404, 409, 410, 422]);
 
-test('真实服务覆盖契约中的全部 52 个接口', { timeout: 240_000 }, async (context) => {
+test('真实服务覆盖契约中的全部契约接口', { timeout: 240_000 }, async (context) => {
     const accessKey = process.env.OPENAPI_AK;
     const secretKey = process.env.OPENAPI_SK;
     const baseUrl = process.env.LINGYA_LIVE_BASE_URL;
@@ -53,6 +53,25 @@ test('真实服务覆盖契约中的全部 52 个接口', { timeout: 240_000 }, 
 
     const first = await invoke('POST', '', () => user.chat.createChat({ query: '仅回复英文 OK' }), 201);
     try {
+        await invoke('POST', '/presign', () => user.configuration.createOpenApiToken(), 201);
+        await invoke('GET', `/conversations/${first.conversationId}`, () => user.conversations.getConversationSummary(first.conversationId));
+        const group = await invoke('POST', '/conversation-groups', () => user.conversations.createConversationGroup({ name: 'SDK contract group' }), 201);
+        try {
+            await invoke('GET', '/conversation-groups', () => user.conversations.listConversationGroups());
+            await invoke('PATCH', '/conversation-groups/{groupId}', () => user.conversations.renameConversationGroup(group.id, { name: 'SDK renamed group' }));
+            await invoke('PATCH', `/conversations/${first.conversationId}/group`, () => user.conversations.moveConversationToGroup(first.conversationId, { groupId: group.id }));
+        } finally {
+            await invoke('DELETE', '/conversation-groups/{groupId}', () => user.conversations.deleteConversationGroup(group.id));
+        }
+        await invoke('GET', `/conversations/${first.conversationId}/messages/sync`, () => user.messages.syncConversationMessages(first.conversationId));
+        await invoke('GET', `/conversations/${first.conversationId}/messages/${first.messageId}/plan/status`, () => user.interactions.getMessagePlanStatus(first.conversationId, first.messageId));
+        await invoke('GET', `/conversations/${first.conversationId}/goal`, () => user.chat.getGoal(first.conversationId));
+        await invoke('GET', `/conversations/${first.conversationId}/goal/history`, () => user.chat.getGoalHistory(first.conversationId));
+        const missingGoal = { goalId: 'missing-goal', goalRevision: 1 };
+        await expectedDomain('PATCH', `/conversations/${first.conversationId}/goal`, () => user.chat.editGoal(first.conversationId, { ...missingGoal, objective: 'Missing goal' }));
+        await expectedDomain('POST', `/conversations/${first.conversationId}/goal/pause`, () => user.chat.pauseGoal(first.conversationId, missingGoal));
+        await expectedDomain('POST', `/conversations/${first.conversationId}/goal/resume`, () => user.chat.resumeGoal(first.conversationId, missingGoal));
+        await expectedDomain('POST', `/conversations/${first.conversationId}/goal/clear`, () => user.chat.clearGoal(first.conversationId, missingGoal));
         await invoke('GET', '/config', () => user.configuration.getAgentsConfig());
         let eventCount = 0;
         for await (const event of user.chat.streamChatEvents(first.conversationId, { messageId: first.messageId })) {
@@ -88,9 +107,6 @@ test('真实服务覆盖契约中的全部 52 个接口', { timeout: 240_000 }, 
         await expectedDomain('GET', `/conversations/${first.conversationId}/subagents/missing-subagent/result`, () => user.messages.getConversationSubagentResult(first.conversationId, 'missing-subagent'));
         await expectedDomain('DELETE', `/conversations/${first.conversationId}/subagents/missing-subagent`, () => user.messages.cancelConversationSubagent(first.conversationId, 'missing-subagent'));
         await expectedDomain('DELETE', `/conversations/${first.conversationId}/messages/${first.messageId}/queue`, () => user.messages.cancelQueuedMessage(first.conversationId, first.messageId));
-        const share = await invoke('POST', `/conversations/${first.conversationId}/shares`, () => user.conversations.createConversationShare(first.conversationId, {}), 201);
-        await invoke('GET', `/conversations/${first.conversationId}/shares`, () => user.conversations.listConversationShares(first.conversationId));
-        await invoke('DELETE', `/conversations/${first.conversationId}/shares/${share.shareId}`, () => user.conversations.revokeConversationShare(first.conversationId, share.shareId));
         await invoke('POST', '/plan/approve', () => user.interactions.approvePlan({ conversationId: first.conversationId, messageId: first.messageId, approved: false }));
         await invoke('GET', '/plan/missing-plan/status', () => user.interactions.getPlanStatus('missing-plan'));
         await invoke('GET', '/user-input/missing-question/status', () => user.interactions.getUserInputStatus('missing-question', { conversationId: first.conversationId, messageId: first.messageId }));
@@ -120,7 +136,7 @@ test('真实服务覆盖契约中的全部 52 个接口', { timeout: 240_000 }, 
     }
 
     const published = await publishedEndpoints();
-    assert.equal(seen.size, 52);
+    assert.equal(seen.size, 64);
     assert.deepEqual([...seen].sort(), published.sort());
 });
 
@@ -147,11 +163,10 @@ function canonicalSuffix(suffix: string): string {
     return suffix
         .replace(/^\/conversations\/(?!active(?:\/|$)|unread(?:\/|$)|stats(?:\/|$)|activity(?:\/|$))[^/]+/, '/conversations/{conversationId}')
         .replace(/\/async-tasks\/(?!sync(?:\/|$))[^/]+/, '/async-tasks/{asyncTaskId}')
-        .replace(/\/subagents\/[^/]+/, '/subagents/{subagentTaskId}')
-        .replace(/\/messages\/[^/]+/, '/messages/{messageId}')
+        .replace(/\/subagents\/(?!sync(?:\/|$))[^/]+/, '/subagents/{subagentTaskId}')
+        .replace(/\/messages\/(?!sync(?:\/|$))[^/]+/, '/messages/{messageId}')
         .replace(/\/plan-intermediate-files\/[^/]+/, '/plan-intermediate-files/{fileId}')
         .replace(/^\/conversations\/\{conversationId}\/[f]iles\/[^/]+/, '/conversations/{conversationId}/files/{fileId}')
-        .replace(/\/shares\/[^/]+/, '/shares/{shareId}')
         .replace(/\/sql-query-results\/[^/]+/, '/sql-query-results/{resultId}')
         .replace(/^\/plan\/[^/]+\/status$/, '/plan/{planId}/status')
         .replace(/^\/user-input\/[^/]+\/status$/, '/user-input/{questionId}/status')

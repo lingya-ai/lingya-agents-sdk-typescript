@@ -1,0 +1,23 @@
+name: Current browser integration
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix test/browser102
+      - name: Verify installed Chrome without downloading browsers
+        run: |
+          export CHROMIUM_EXECUTABLE=$(command -v google-chrome)
+          export CHROMIUM_MAJOR=$(google-chrome --product-version | cut -d. -f1)
+          npm run browser:102

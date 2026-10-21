@@ -7,6 +7,6 @@ test('decodes chunks, multiline data and heartbeat comments', async () => {
     const chunks = [': heartbeat\n', 'data: {"a":\n', 'data: 1}\n\n', 'data: done\n\n'];
     const body = new ReadableStream({ start(controller) { chunks.forEach((chunk) => controller.enqueue(encoder.encode(chunk))); controller.close(); } });
     const values: string[] = [];
-    for await (const value of decodeSse(new Response(body))) values.push(value);
+    for await (const value of decodeSse(new Response(body, { headers: { 'Content-Type': 'text/event-stream' } }))) values.push(value);
     assert.deepEqual(values, ['{"a":\n1}', 'done']);
 });

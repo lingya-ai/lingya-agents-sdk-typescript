@@ -3,60 +3,206 @@
 // These facades bind channelId once so application code cannot accidentally sign a
 // request for a channel that differs from the client configuration.
 
-import { ConfigurationApi as GeneratedConfigurationApi, ChatApi as GeneratedChatApi, ConversationsApi as GeneratedConversationsApi, SQLApi as GeneratedSQLApi, MessagesApi as GeneratedMessagesApi, EventsApi as GeneratedEventsApi, InteractionsApi as GeneratedInteractionsApi, FilesApi as GeneratedFilesApi, KnowledgeApi as GeneratedKnowledgeApi, WorkspaceApi as GeneratedWorkspaceApi, type GetAgentsConfigRequest, type GetConversationConfigRequest, type CreateChatRequest, type ContinueChatRequest, type DeleteConversationRequest, type StreamChatEventsRequest, type ProbeEventStreamRequest, type InterruptConversationRequest, type CompactConversationRequest, type GetConversationContextUsageRequest, type ListConversationsRequest, type ListActiveConversationsRequest, type ListUnreadConversationsRequest, type QueryConversationActivitiesRequest, type MarkConversationReadRequest, type GetConversationStatsRequest, type GetConversationTitleRequest, type UpdateConversationTitleRequest, type UpdateConversationStatusRequest, type GetSqlQueryResultRequest, type GetSqlQueryChartDataRequest, type ExportSqlQueryResultRequest, type ListConversationMessagesRequest, type GetConversationMessageRequest, type ListConversationAsyncTasksRequest, type SyncConversationAsyncTasksRequest, type GetConversationAsyncTaskRequest, type ListConversationSubagentsRequest, type SyncConversationSubagentsRequest, type GetConversationSubagentRequest, type CancelConversationSubagentRequest, type GetConversationSubagentResultRequest, type CancelQueuedMessageRequest, type GetChatEventsRequest, type GetChatEventsBatchRequest, type ListConversationSharesRequest, type CreateConversationShareRequest, type RevokeConversationShareRequest, type ApprovePlanRequest, type GetPlanStatusRequest, type GetUserInputStatusRequest, type AnswerUserInputRequest, type CreatePreSignedUploadRequest, type ConfirmPreSignedUploadRequest, type CreateFileByContentMd5Request, type FileExistsByContentMd5Request, type GetConversationFilePreviewRequest, type GetPlanIntermediateFilePreviewRequest, type GetCitationMetadataBatchRequest, type GetCitationMetadataRequest, type ListWorkspaceArtifactsRequest, type GetWorkspaceFilePreviewRequest } from './apis';
+import { ConfigurationApi as GeneratedConfigurationApi, ChatApi as GeneratedChatApi, ConversationsApi as GeneratedConversationsApi, SQLApi as GeneratedSQLApi, MessagesApi as GeneratedMessagesApi, EventsApi as GeneratedEventsApi, InteractionsApi as GeneratedInteractionsApi, FilesApi as GeneratedFilesApi, KnowledgeApi as GeneratedKnowledgeApi, WorkspaceApi as GeneratedWorkspaceApi, type GetAgentsConfigRequest, type GetConversationConfigRequest, type CreateChatRequest, type ContinueChatRequest, type DeleteConversationRequest, type GetConversationSummaryRequest, type StreamChatEventsRequest, type ProbeEventStreamRequest, type InterruptConversationRequest, type CompactConversationRequest, type GetConversationContextUsageRequest, type ListConversationsRequest, type ListActiveConversationsRequest, type ListUnreadConversationsRequest, type QueryConversationActivitiesRequest, type MarkConversationReadRequest, type GetConversationStatsRequest, type GetConversationTitleRequest, type UpdateConversationTitleRequest, type UpdateConversationStatusRequest, type GetSqlQueryResultRequest, type GetSqlQueryChartDataRequest, type ExportSqlQueryResultRequest, type ListConversationMessagesRequest, type GetConversationMessageRequest, type ListConversationAsyncTasksRequest, type SyncConversationAsyncTasksRequest, type GetConversationAsyncTaskRequest, type ListConversationSubagentsRequest, type SyncConversationSubagentsRequest, type GetConversationSubagentRequest, type CancelConversationSubagentRequest, type GetConversationSubagentResultRequest, type CancelQueuedMessageRequest, type GetChatEventsRequest, type GetChatEventsBatchRequest, type ApprovePlanRequest, type GetPlanStatusRequest, type GetUserInputStatusRequest, type AnswerUserInputRequest, type CreatePreSignedUploadRequest, type ConfirmPreSignedUploadRequest, type CreateFileByContentMd5Request, type FileExistsByContentMd5Request, type GetConversationFilePreviewRequest, type GetPlanIntermediateFilePreviewRequest, type GetCitationMetadataBatchRequest, type GetCitationMetadataRequest, type ListWorkspaceArtifactsRequest, type GetWorkspaceFilePreviewRequest, type CreateOpenApiTokenRequest, type ListConversationGroupsRequest, type CreateConversationGroupRequest, type RenameConversationGroupRequest, type DeleteConversationGroupRequest, type MoveConversationToGroupRequest, type SyncConversationMessagesRequest, type GetMessagePlanStatusRequest, type GetGoalRequest, type EditGoalRequest, type GetGoalHistoryRequest, type PauseGoalRequest, type ResumeGoalRequest, type ClearGoalRequest } from './apis';
 import { ChatStreamProbeEventFromJSON, type ChatStreamProbeEvent } from './models/ChatStreamProbeEvent';
 import { decodeAiChatBriefEvent, type AiChatBriefEvent } from './events';
+import { ApiError, execute, RequestScope, normalizeError, downloadResponse, type DownloadResponse, type RequestOptions } from './lifecycle';
+import { finiteSse, type ChatSubscription, type StreamOptions } from './subscription';
 import { decodeSse } from './sse';
 
-type BoundRawRequest = (method: string, suffix: string, bodyJson: string | undefined, query: URLSearchParams | undefined, accept: string, requestId?: string) => Promise<Response>;
+type BoundRawRequest = (method: string, suffix: string, bodyJson: string | undefined, query: URLSearchParams | undefined, accept: string, requestId?: string, signal?: AbortSignal) => Promise<Response>;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type StreamChatEventsOptions = Omit<StreamChatEventsRequest, 'channelId' | 'conversationId' | 'aiChatStreamInput'>;
+export type GetAgentsConfigOptions = Omit<GetAgentsConfigRequest, 'channelId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ProbeEventStreamOptions = Omit<ProbeEventStreamRequest, 'channelId' | 'chatStreamProbeInput'>;
+export type GetConversationConfigOptions = Omit<GetConversationConfigRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type CompactConversationOptions = Omit<CompactConversationRequest, 'channelId' | 'conversationId'>;
+export type CreateChatOptions = Omit<CreateChatRequest, 'channelId' | 'aiChatInput'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ListConversationsOptions = Omit<ListConversationsRequest, 'channelId'>;
+export type ContinueChatOptions = Omit<ContinueChatRequest, 'channelId' | 'conversationId' | 'aiChatInput'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type GetSqlQueryResultOptions = Omit<GetSqlQueryResultRequest, 'channelId' | 'conversationId' | 'resultId'>;
+export type DeleteConversationOptions = Omit<DeleteConversationRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ExportSqlQueryResultOptions = Omit<ExportSqlQueryResultRequest, 'channelId' | 'conversationId' | 'resultId'>;
+export type GetConversationSummaryOptions = Omit<GetConversationSummaryRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ListConversationMessagesOptions = Omit<ListConversationMessagesRequest, 'channelId' | 'conversationId'>;
+export type StreamChatEventsOptions = Omit<StreamChatEventsRequest, 'channelId' | 'conversationId' | 'aiChatStreamInput'> & StreamOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ListConversationAsyncTasksOptions = Omit<ListConversationAsyncTasksRequest, 'channelId' | 'conversationId'>;
+export type ProbeEventStreamOptions = Omit<ProbeEventStreamRequest, 'channelId' | 'chatStreamProbeInput'> & StreamOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type SyncConversationAsyncTasksOptions = Omit<SyncConversationAsyncTasksRequest, 'channelId' | 'conversationId'>;
+export type InterruptConversationOptions = Omit<InterruptConversationRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ListConversationSubagentsOptions = Omit<ListConversationSubagentsRequest, 'channelId' | 'conversationId'>;
+export type CompactConversationOptions = Omit<CompactConversationRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type SyncConversationSubagentsOptions = Omit<SyncConversationSubagentsRequest, 'channelId' | 'conversationId'>;
+export type GetConversationContextUsageOptions = Omit<GetConversationContextUsageRequest, 'channelId' | 'conversationId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type GetChatEventsOptions = Omit<GetChatEventsRequest, 'channelId'>;
+export type ListConversationsOptions = Omit<ListConversationsRequest, 'channelId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type GetUserInputStatusOptions = Omit<GetUserInputStatusRequest, 'channelId' | 'questionId'>;
+export type ListActiveConversationsOptions = Omit<ListActiveConversationsRequest, 'channelId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type FileExistsByContentMd5Options = Omit<FileExistsByContentMd5Request, 'channelId'>;
+export type ListUnreadConversationsOptions = Omit<ListUnreadConversationsRequest, 'channelId'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type ListWorkspaceArtifactsOptions = Omit<ListWorkspaceArtifactsRequest, 'channelId' | 'conversationId'>;
+export type QueryConversationActivitiesOptions = Omit<QueryConversationActivitiesRequest, 'channelId' | 'conversationActivityBatchInput'> & RequestOptions;
 
 /** Query values and optional request headers that are not bound by the client. */
-export type GetWorkspaceFilePreviewOptions = Omit<GetWorkspaceFilePreviewRequest, 'channelId' | 'conversationId'>;
+export type MarkConversationReadOptions = Omit<MarkConversationReadRequest, 'channelId' | 'conversationId' | 'conversationReadReceiptInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationStatsOptions = Omit<GetConversationStatsRequest, 'channelId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationTitleOptions = Omit<GetConversationTitleRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type UpdateConversationTitleOptions = Omit<UpdateConversationTitleRequest, 'channelId' | 'conversationId' | 'conversationTitleInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type UpdateConversationStatusOptions = Omit<UpdateConversationStatusRequest, 'channelId' | 'conversationId' | 'conversationStatusInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetSqlQueryResultOptions = Omit<GetSqlQueryResultRequest, 'channelId' | 'conversationId' | 'resultId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetSqlQueryChartDataOptions = Omit<GetSqlQueryChartDataRequest, 'channelId' | 'conversationId' | 'resultId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ExportSqlQueryResultOptions = Omit<ExportSqlQueryResultRequest, 'channelId' | 'conversationId' | 'resultId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListConversationMessagesOptions = Omit<ListConversationMessagesRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationMessageOptions = Omit<GetConversationMessageRequest, 'channelId' | 'conversationId' | 'messageId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListConversationAsyncTasksOptions = Omit<ListConversationAsyncTasksRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type SyncConversationAsyncTasksOptions = Omit<SyncConversationAsyncTasksRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationAsyncTaskOptions = Omit<GetConversationAsyncTaskRequest, 'channelId' | 'conversationId' | 'asyncTaskId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListConversationSubagentsOptions = Omit<ListConversationSubagentsRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type SyncConversationSubagentsOptions = Omit<SyncConversationSubagentsRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationSubagentOptions = Omit<GetConversationSubagentRequest, 'channelId' | 'conversationId' | 'subagentTaskId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CancelConversationSubagentOptions = Omit<CancelConversationSubagentRequest, 'channelId' | 'conversationId' | 'subagentTaskId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationSubagentResultOptions = Omit<GetConversationSubagentResultRequest, 'channelId' | 'conversationId' | 'subagentTaskId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CancelQueuedMessageOptions = Omit<CancelQueuedMessageRequest, 'channelId' | 'conversationId' | 'messageId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetChatEventsOptions = Omit<GetChatEventsRequest, 'channelId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetChatEventsBatchOptions = Omit<GetChatEventsBatchRequest, 'channelId' | 'aiChatEventsBatchInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ApprovePlanOptions = Omit<ApprovePlanRequest, 'channelId' | 'planApprovalInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetPlanStatusOptions = Omit<GetPlanStatusRequest, 'channelId' | 'planId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetUserInputStatusOptions = Omit<GetUserInputStatusRequest, 'channelId' | 'questionId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type AnswerUserInputOptions = Omit<AnswerUserInputRequest, 'channelId' | 'userInputAnswerInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CreatePreSignedUploadOptions = Omit<CreatePreSignedUploadRequest, 'channelId' | 'generatePreSignedUrlInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ConfirmPreSignedUploadOptions = Omit<ConfirmPreSignedUploadRequest, 'channelId' | 'confirmUploadInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CreateFileByContentMd5Options = Omit<CreateFileByContentMd5Request, 'channelId' | 'createFileInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type FileExistsByContentMd5Options = Omit<FileExistsByContentMd5Request, 'channelId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetConversationFilePreviewOptions = Omit<GetConversationFilePreviewRequest, 'channelId' | 'conversationId' | 'fileId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetPlanIntermediateFilePreviewOptions = Omit<GetPlanIntermediateFilePreviewRequest, 'channelId' | 'conversationId' | 'messageId' | 'fileId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetCitationMetadataBatchOptions = Omit<GetCitationMetadataBatchRequest, 'channelId' | 'returnedReference'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetCitationMetadataOptions = Omit<GetCitationMetadataRequest, 'channelId' | 'citationType' | 'referenceId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListWorkspaceArtifactsOptions = Omit<ListWorkspaceArtifactsRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetWorkspaceFilePreviewOptions = Omit<GetWorkspaceFilePreviewRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CreateOpenApiTokenOptions = Omit<CreateOpenApiTokenRequest, 'channelId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ListConversationGroupsOptions = Omit<ListConversationGroupsRequest, 'channelId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type CreateConversationGroupOptions = Omit<CreateConversationGroupRequest, 'channelId' | 'conversationGroupNameInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type RenameConversationGroupOptions = Omit<RenameConversationGroupRequest, 'channelId' | 'groupId' | 'conversationGroupNameInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type DeleteConversationGroupOptions = Omit<DeleteConversationGroupRequest, 'channelId' | 'groupId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type MoveConversationToGroupOptions = Omit<MoveConversationToGroupRequest, 'channelId' | 'conversationId' | 'updateConversationGroupInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type SyncConversationMessagesOptions = Omit<SyncConversationMessagesRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetMessagePlanStatusOptions = Omit<GetMessagePlanStatusRequest, 'channelId' | 'conversationId' | 'messageId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetGoalOptions = Omit<GetGoalRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type EditGoalOptions = Omit<EditGoalRequest, 'channelId' | 'conversationId' | 'editAgentGoalInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type GetGoalHistoryOptions = Omit<GetGoalHistoryRequest, 'channelId' | 'conversationId'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type PauseGoalOptions = Omit<PauseGoalRequest, 'channelId' | 'conversationId' | 'agentGoalRefInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ResumeGoalOptions = Omit<ResumeGoalRequest, 'channelId' | 'conversationId' | 'agentGoalRefInput'> & RequestOptions;
+
+/** Query values and optional request headers that are not bound by the client. */
+export type ClearGoalOptions = Omit<ClearGoalRequest, 'channelId' | 'conversationId' | 'agentGoalRefInput'> & RequestOptions;
 
 /** Generated APIs retained as an explicit compatibility escape hatch until 1.0. */
 export class AgentsLowLevelApis {
@@ -90,6 +236,7 @@ export class ConfigurationApi {
     public constructor(
         private readonly channelId: string,
         private readonly delegate: GeneratedConfigurationApi,
+        private readonly tokenAuth: boolean = false,
     ) {}
 
     /**
@@ -97,8 +244,8 @@ export class ConfigurationApi {
      *
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getAgentsConfig(): ReturnType<GeneratedConfigurationApi['getAgentsConfig']> {
-        return this.delegate.getAgentsConfig({ channelId: this.channelId });
+    public getAgentsConfig(options: GetAgentsConfigOptions = {}): ReturnType<GeneratedConfigurationApi['getAgentsConfig']> {
+        return execute(options, signal => this.delegate.getAgentsConfig({ channelId: this.channelId }, { signal }));
     }
 
     /**
@@ -107,8 +254,18 @@ export class ConfigurationApi {
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationConfig(conversationId: GetConversationConfigRequest['conversationId']): ReturnType<GeneratedConfigurationApi['getConversationConfig']> {
-        return this.delegate.getConversationConfig({ channelId: this.channelId, conversationId });
+    public getConversationConfig(conversationId: GetConversationConfigRequest['conversationId'], options: GetConversationConfigOptions = {}): ReturnType<GeneratedConfigurationApi['getConversationConfig']> {
+        return execute(options, signal => this.delegate.getConversationConfig({ channelId: this.channelId, conversationId }, { signal }));
+    }
+
+    /**
+     * 签发一次性短期渠道令牌 / Create a single-use short-lived channel token
+     *
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public createOpenApiToken(options: CreateOpenApiTokenOptions = {}): ReturnType<GeneratedConfigurationApi['createOpenApiToken']> {
+        if (this.tokenAuth) return Promise.reject(new ApiError('POST', '/presign', undefined, '{"message":"presign requires HMAC authentication"}', { kind: 'authentication' }));
+        return execute(options, signal => this.delegate.createOpenApiToken({ channelId: this.channelId }, { signal }));
     }
 
 }
@@ -119,6 +276,7 @@ export class ChatApi {
         private readonly channelId: string,
         private readonly delegate: GeneratedChatApi,
         private readonly rawRequest: BoundRawRequest,
+        private readonly subscribe: (conversationId: string, input: StreamChatEventsRequest['aiChatStreamInput'], options: StreamChatEventsOptions) => ChatSubscription,
     ) {}
 
     /**
@@ -127,8 +285,8 @@ export class ChatApi {
      * @param input - 创建会话并提交消息 / Create a conversation and submit a message 的强类型请求体。 / Typed request body for createChat.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public createChat(input: CreateChatRequest['aiChatInput']): ReturnType<GeneratedChatApi['createChat']> {
-        return this.delegate.createChat({ channelId: this.channelId, aiChatInput: input });
+    public createChat(input: CreateChatRequest['aiChatInput'], options: CreateChatOptions = {}): ReturnType<GeneratedChatApi['createChat']> {
+        return execute(options, signal => this.delegate.createChat({ channelId: this.channelId, aiChatInput: input }, { signal }));
     }
 
     /**
@@ -138,8 +296,8 @@ export class ChatApi {
      * @param input - 向已有会话提交消息 / Submit a message to an existing conversation 的强类型请求体。 / Typed request body for continueChat.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public continueChat(conversationId: ContinueChatRequest['conversationId'], input: ContinueChatRequest['aiChatInput']): ReturnType<GeneratedChatApi['continueChat']> {
-        return this.delegate.continueChat({ channelId: this.channelId, conversationId, aiChatInput: input });
+    public continueChat(conversationId: ContinueChatRequest['conversationId'], input: ContinueChatRequest['aiChatInput'], options: ContinueChatOptions = {}): ReturnType<GeneratedChatApi['continueChat']> {
+        return execute(options, signal => this.delegate.continueChat({ channelId: this.channelId, conversationId, aiChatInput: input }, { signal }));
     }
 
     /**
@@ -151,11 +309,7 @@ export class ChatApi {
      * @returns 可取消的强类型事件序列。 / A cancellable typed event sequence.
      */
     public async *streamChatEvents(conversationId: StreamChatEventsRequest['conversationId'], input: StreamChatEventsRequest['aiChatStreamInput'], options: StreamChatEventsOptions = {}): AsyncGenerator<AiChatBriefEvent> {
-        const suffix = `/conversations/${encodeURIComponent(String(conversationId))}/stream`;
-        const response = await this.rawRequest('POST', suffix, JSON.stringify(input), undefined, 'text/event-stream', options?.xRequestID);
-        for await (const data of decodeSse(response)) {
-            yield decodeAiChatBriefEvent(data);
-        }
+        yield* this.subscribeChatEvents(conversationId, input, options);
     }
 
     /**
@@ -166,11 +320,9 @@ export class ChatApi {
      * @returns 可取消的强类型事件序列。 / A cancellable typed event sequence.
      */
     public async *probeEventStream(input: ProbeEventStreamRequest['chatStreamProbeInput'], options: ProbeEventStreamOptions = {}): AsyncGenerator<ChatStreamProbeEvent> {
-        const suffix = `/stream-probe`;
-        const response = await this.rawRequest('POST', suffix, JSON.stringify(input), undefined, 'text/event-stream', options?.xRequestID);
-        for await (const data of decodeSse(response)) {
-            yield ChatStreamProbeEventFromJSON(JSON.parse(data));
-        }
+        try {
+            for await (const data of finiteSse(signal => this.rawRequest('POST', '/stream-probe', JSON.stringify(input), undefined, 'text/event-stream', options.xRequestID, signal), options)) yield ChatStreamProbeEventFromJSON(JSON.parse(data));
+        } catch (error) { throw await normalizeError(error); }
     }
 
     /**
@@ -179,8 +331,8 @@ export class ChatApi {
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public interruptConversation(conversationId: InterruptConversationRequest['conversationId']): ReturnType<GeneratedChatApi['interruptConversation']> {
-        return this.delegate.interruptConversation({ channelId: this.channelId, conversationId });
+    public interruptConversation(conversationId: InterruptConversationRequest['conversationId'], options: InterruptConversationOptions = {}): ReturnType<GeneratedChatApi['interruptConversation']> {
+        return execute(options, signal => this.delegate.interruptConversation({ channelId: this.channelId, conversationId }, { signal }));
     }
 
     /**
@@ -191,9 +343,75 @@ export class ChatApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public compactConversation(conversationId: CompactConversationRequest['conversationId'], options: CompactConversationOptions = {}): ReturnType<GeneratedChatApi['compactConversation']> {
-        return this.delegate.compactConversation({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.compactConversation({ channelId: this.channelId, conversationId, force: options.force }, { signal }));
     }
 
+    /**
+     * 读取当前目标 / Get current goal
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getGoal(conversationId: GetGoalRequest['conversationId'], options: GetGoalOptions = {}): ReturnType<GeneratedChatApi['getGoal']> {
+        return execute(options, signal => this.delegate.getGoal({ channelId: this.channelId, conversationId }, { signal }));
+    }
+
+    /**
+     * 编辑目标 / Edit goal
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param input - 编辑目标 / Edit goal 的强类型请求体。 / Typed request body for editGoal.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public editGoal(conversationId: EditGoalRequest['conversationId'], input: EditGoalRequest['editAgentGoalInput'], options: EditGoalOptions = {}): ReturnType<GeneratedChatApi['editGoal']> {
+        return execute(options, signal => this.delegate.editGoal({ channelId: this.channelId, conversationId, editAgentGoalInput: input }, { signal }));
+    }
+
+    /**
+     * 查询目标历史 / Get goal history
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param options - 查询参数与可选请求头。 / Query parameters and optional request headers.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getGoalHistory(conversationId: GetGoalHistoryRequest['conversationId'], options: GetGoalHistoryOptions = {}): ReturnType<GeneratedChatApi['getGoalHistory']> {
+        return execute(options, signal => this.delegate.getGoalHistory({ channelId: this.channelId, conversationId, page: options.page, size: options.size }, { signal }));
+    }
+
+    /**
+     * 暂停目标 / Pause goal
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param input - 暂停目标 / Pause goal 的强类型请求体。 / Typed request body for pauseGoal.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public pauseGoal(conversationId: PauseGoalRequest['conversationId'], input: PauseGoalRequest['agentGoalRefInput'], options: PauseGoalOptions = {}): ReturnType<GeneratedChatApi['pauseGoal']> {
+        return execute(options, signal => this.delegate.pauseGoal({ channelId: this.channelId, conversationId, agentGoalRefInput: input }, { signal }));
+    }
+
+    /**
+     * 恢复目标 / Resume goal
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param input - 恢复目标 / Resume goal 的强类型请求体。 / Typed request body for resumeGoal.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public resumeGoal(conversationId: ResumeGoalRequest['conversationId'], input: ResumeGoalRequest['agentGoalRefInput'], options: ResumeGoalOptions = {}): ReturnType<GeneratedChatApi['resumeGoal']> {
+        return execute(options, signal => this.delegate.resumeGoal({ channelId: this.channelId, conversationId, agentGoalRefInput: input }, { signal }));
+    }
+
+    /**
+     * 清除目标 / Clear goal
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param input - 清除目标 / Clear goal 的强类型请求体。 / Typed request body for clearGoal.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public clearGoal(conversationId: ClearGoalRequest['conversationId'], input: ClearGoalRequest['agentGoalRefInput'], options: ClearGoalOptions = {}): ReturnType<GeneratedChatApi['clearGoal']> {
+        return execute(options, signal => this.delegate.clearGoal({ channelId: this.channelId, conversationId, agentGoalRefInput: input }, { signal }));
+    }
+
+    public subscribeChatEvents(conversationId: string, input: StreamChatEventsRequest['aiChatStreamInput'], options: StreamChatEventsOptions = {}): ChatSubscription { return this.subscribe(conversationId, input, options); }
 }
 
 /** Channel-bound conversations operations for one external user. */
@@ -209,8 +427,18 @@ export class ConversationsApi {
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public deleteConversation(conversationId: DeleteConversationRequest['conversationId']): ReturnType<GeneratedConversationsApi['deleteConversation']> {
-        return this.delegate.deleteConversation({ channelId: this.channelId, conversationId });
+    public deleteConversation(conversationId: DeleteConversationRequest['conversationId'], options: DeleteConversationOptions = {}): ReturnType<GeneratedConversationsApi['deleteConversation']> {
+        return execute(options, signal => this.delegate.deleteConversation({ channelId: this.channelId, conversationId }, { signal }));
+    }
+
+    /**
+     * 读取会话摘要 / Get conversation summary
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getConversationSummary(conversationId: GetConversationSummaryRequest['conversationId'], options: GetConversationSummaryOptions = {}): ReturnType<GeneratedConversationsApi['getConversationSummary']> {
+        return execute(options, signal => this.delegate.getConversationSummary({ channelId: this.channelId, conversationId }, { signal }));
     }
 
     /**
@@ -219,8 +447,8 @@ export class ConversationsApi {
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationContextUsage(conversationId: GetConversationContextUsageRequest['conversationId']): ReturnType<GeneratedConversationsApi['getConversationContextUsage']> {
-        return this.delegate.getConversationContextUsage({ channelId: this.channelId, conversationId });
+    public getConversationContextUsage(conversationId: GetConversationContextUsageRequest['conversationId'], options: GetConversationContextUsageOptions = {}): ReturnType<GeneratedConversationsApi['getConversationContextUsage']> {
+        return execute(options, signal => this.delegate.getConversationContextUsage({ channelId: this.channelId, conversationId }, { signal }));
     }
 
     /**
@@ -230,7 +458,7 @@ export class ConversationsApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public listConversations(options: ListConversationsOptions = {}): ReturnType<GeneratedConversationsApi['listConversations']> {
-        return this.delegate.listConversations({ channelId: this.channelId, ...options });
+        return execute(options, signal => this.delegate.listConversations({ channelId: this.channelId, current: options.current, size: options.size, status: options.status, keyword: options.keyword, groupFilter: options.groupFilter, groupId: options.groupId }, { signal }));
     }
 
     /**
@@ -238,8 +466,8 @@ export class ConversationsApi {
      *
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public listActiveConversations(): ReturnType<GeneratedConversationsApi['listActiveConversations']> {
-        return this.delegate.listActiveConversations({ channelId: this.channelId });
+    public listActiveConversations(options: ListActiveConversationsOptions = {}): ReturnType<GeneratedConversationsApi['listActiveConversations']> {
+        return execute(options, signal => this.delegate.listActiveConversations({ channelId: this.channelId }, { signal }));
     }
 
     /**
@@ -247,8 +475,8 @@ export class ConversationsApi {
      *
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public listUnreadConversations(): ReturnType<GeneratedConversationsApi['listUnreadConversations']> {
-        return this.delegate.listUnreadConversations({ channelId: this.channelId });
+    public listUnreadConversations(options: ListUnreadConversationsOptions = {}): ReturnType<GeneratedConversationsApi['listUnreadConversations']> {
+        return execute(options, signal => this.delegate.listUnreadConversations({ channelId: this.channelId }, { signal }));
     }
 
     /**
@@ -257,8 +485,8 @@ export class ConversationsApi {
      * @param input - 批量查询会话活动 / Query conversation activities 的强类型请求体。 / Typed request body for queryConversationActivities.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public queryConversationActivities(input: QueryConversationActivitiesRequest['conversationActivityBatchInput']): ReturnType<GeneratedConversationsApi['queryConversationActivities']> {
-        return this.delegate.queryConversationActivities({ channelId: this.channelId, conversationActivityBatchInput: input });
+    public queryConversationActivities(input: QueryConversationActivitiesRequest['conversationActivityBatchInput'], options: QueryConversationActivitiesOptions = {}): ReturnType<GeneratedConversationsApi['queryConversationActivities']> {
+        return execute(options, signal => this.delegate.queryConversationActivities({ channelId: this.channelId, conversationActivityBatchInput: input }, { signal }));
     }
 
     /**
@@ -268,8 +496,8 @@ export class ConversationsApi {
      * @param input - 推进会话已读游标 / Mark a conversation as read 的强类型请求体。 / Typed request body for markConversationRead.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public markConversationRead(conversationId: MarkConversationReadRequest['conversationId'], input: MarkConversationReadRequest['conversationReadReceiptInput']): ReturnType<GeneratedConversationsApi['markConversationRead']> {
-        return this.delegate.markConversationRead({ channelId: this.channelId, conversationId, conversationReadReceiptInput: input });
+    public markConversationRead(conversationId: MarkConversationReadRequest['conversationId'], input: MarkConversationReadRequest['conversationReadReceiptInput'], options: MarkConversationReadOptions = {}): ReturnType<GeneratedConversationsApi['markConversationRead']> {
+        return execute(options, signal => this.delegate.markConversationRead({ channelId: this.channelId, conversationId, conversationReadReceiptInput: input }, { signal }));
     }
 
     /**
@@ -277,8 +505,8 @@ export class ConversationsApi {
      *
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationStats(): ReturnType<GeneratedConversationsApi['getConversationStats']> {
-        return this.delegate.getConversationStats({ channelId: this.channelId });
+    public getConversationStats(options: GetConversationStatsOptions = {}): ReturnType<GeneratedConversationsApi['getConversationStats']> {
+        return execute(options, signal => this.delegate.getConversationStats({ channelId: this.channelId }, { signal }));
     }
 
     /**
@@ -287,8 +515,8 @@ export class ConversationsApi {
      * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationTitle(conversationId: GetConversationTitleRequest['conversationId']): ReturnType<GeneratedConversationsApi['getConversationTitle']> {
-        return this.delegate.getConversationTitle({ channelId: this.channelId, conversationId });
+    public getConversationTitle(conversationId: GetConversationTitleRequest['conversationId'], options: GetConversationTitleOptions = {}): ReturnType<GeneratedConversationsApi['getConversationTitle']> {
+        return execute(options, signal => this.delegate.getConversationTitle({ channelId: this.channelId, conversationId }, { signal }));
     }
 
     /**
@@ -298,8 +526,8 @@ export class ConversationsApi {
      * @param input - 更新会话标题 / Update conversation title 的强类型请求体。 / Typed request body for updateConversationTitle.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public updateConversationTitle(conversationId: UpdateConversationTitleRequest['conversationId'], input: UpdateConversationTitleRequest['conversationTitleInput']): ReturnType<GeneratedConversationsApi['updateConversationTitle']> {
-        return this.delegate.updateConversationTitle({ channelId: this.channelId, conversationId, conversationTitleInput: input });
+    public updateConversationTitle(conversationId: UpdateConversationTitleRequest['conversationId'], input: UpdateConversationTitleRequest['conversationTitleInput'], options: UpdateConversationTitleOptions = {}): ReturnType<GeneratedConversationsApi['updateConversationTitle']> {
+        return execute(options, signal => this.delegate.updateConversationTitle({ channelId: this.channelId, conversationId, conversationTitleInput: input }, { signal }));
     }
 
     /**
@@ -309,40 +537,59 @@ export class ConversationsApi {
      * @param input - 更新会话状态 / Update conversation status 的强类型请求体。 / Typed request body for updateConversationStatus.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public updateConversationStatus(conversationId: UpdateConversationStatusRequest['conversationId'], input: UpdateConversationStatusRequest['conversationStatusInput']): ReturnType<GeneratedConversationsApi['updateConversationStatus']> {
-        return this.delegate.updateConversationStatus({ channelId: this.channelId, conversationId, conversationStatusInput: input });
+    public updateConversationStatus(conversationId: UpdateConversationStatusRequest['conversationId'], input: UpdateConversationStatusRequest['conversationStatusInput'], options: UpdateConversationStatusOptions = {}): ReturnType<GeneratedConversationsApi['updateConversationStatus']> {
+        return execute(options, signal => this.delegate.updateConversationStatus({ channelId: this.channelId, conversationId, conversationStatusInput: input }, { signal }));
     }
 
     /**
-     * 查询会话分享 / List conversation shares
+     * 查询会话分组 / List conversation groups
      *
-     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public listConversationShares(conversationId: ListConversationSharesRequest['conversationId']): ReturnType<GeneratedConversationsApi['listConversationShares']> {
-        return this.delegate.listConversationShares({ channelId: this.channelId, conversationId });
+    public listConversationGroups(options: ListConversationGroupsOptions = {}): ReturnType<GeneratedConversationsApi['listConversationGroups']> {
+        return execute(options, signal => this.delegate.listConversationGroups({ channelId: this.channelId }, { signal }));
     }
 
     /**
-     * 创建会话分享 / Create a conversation share
+     * 创建会话分组 / Create conversation group
      *
-     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
-     * @param input - 创建会话分享 / Create a conversation share 的强类型请求体。 / Typed request body for createConversationShare.
+     * @param input - 创建会话分组 / Create conversation group 的强类型请求体。 / Typed request body for createConversationGroup.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public createConversationShare(conversationId: CreateConversationShareRequest['conversationId'], input: CreateConversationShareRequest['conversationShareInput']): ReturnType<GeneratedConversationsApi['createConversationShare']> {
-        return this.delegate.createConversationShare({ channelId: this.channelId, conversationId, conversationShareInput: input });
+    public createConversationGroup(input: CreateConversationGroupRequest['conversationGroupNameInput'], options: CreateConversationGroupOptions = {}): ReturnType<GeneratedConversationsApi['createConversationGroup']> {
+        return execute(options, signal => this.delegate.createConversationGroup({ channelId: this.channelId, conversationGroupNameInput: input }, { signal }));
     }
 
     /**
-     * 撤销会话分享 / Revoke a conversation share
+     * 重命名会话分组 / Rename conversation group
      *
-     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
-     * @param shareId - 会话分享记录 ID。 / Conversation-share record ID.
+     * @param groupId - 字段 groupId / group id field。
+     * @param input - 重命名会话分组 / Rename conversation group 的强类型请求体。 / Typed request body for renameConversationGroup.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public revokeConversationShare(conversationId: RevokeConversationShareRequest['conversationId'], shareId: RevokeConversationShareRequest['shareId']): ReturnType<GeneratedConversationsApi['revokeConversationShare']> {
-        return this.delegate.revokeConversationShare({ channelId: this.channelId, conversationId, shareId });
+    public renameConversationGroup(groupId: RenameConversationGroupRequest['groupId'], input: RenameConversationGroupRequest['conversationGroupNameInput'], options: RenameConversationGroupOptions = {}): ReturnType<GeneratedConversationsApi['renameConversationGroup']> {
+        return execute(options, signal => this.delegate.renameConversationGroup({ channelId: this.channelId, groupId, conversationGroupNameInput: input }, { signal }));
+    }
+
+    /**
+     * 删除会话分组 / Delete conversation group
+     *
+     * @param groupId - 字段 groupId / group id field。
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public deleteConversationGroup(groupId: DeleteConversationGroupRequest['groupId'], options: DeleteConversationGroupOptions = {}): ReturnType<GeneratedConversationsApi['deleteConversationGroup']> {
+        return execute(options, signal => this.delegate.deleteConversationGroup({ channelId: this.channelId, groupId }, { signal }));
+    }
+
+    /**
+     * 移动会话分组 / Move conversation to group
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param input - 移动会话分组 / Move conversation to group 的强类型请求体。 / Typed request body for moveConversationToGroup.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public moveConversationToGroup(conversationId: MoveConversationToGroupRequest['conversationId'], input: MoveConversationToGroupRequest['updateConversationGroupInput'], options: MoveConversationToGroupOptions = {}): ReturnType<GeneratedConversationsApi['moveConversationToGroup']> {
+        return execute(options, signal => this.delegate.moveConversationToGroup({ channelId: this.channelId, conversationId, updateConversationGroupInput: input }, { signal }));
     }
 
 }
@@ -363,7 +610,7 @@ export class SqlApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public getSqlQueryResult(conversationId: GetSqlQueryResultRequest['conversationId'], resultId: GetSqlQueryResultRequest['resultId'], options: GetSqlQueryResultOptions = {}): ReturnType<GeneratedSQLApi['getSqlQueryResult']> {
-        return this.delegate.getSqlQueryResult({ channelId: this.channelId, conversationId, resultId, ...options });
+        return execute(options, signal => this.delegate.getSqlQueryResult({ channelId: this.channelId, conversationId, resultId, current: options.current, size: options.size }, { signal }));
     }
 
     /**
@@ -373,8 +620,8 @@ export class SqlApi {
      * @param resultId - SQL 查询结果 ID。 / SQL query-result ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getSqlQueryChartData(conversationId: GetSqlQueryChartDataRequest['conversationId'], resultId: GetSqlQueryChartDataRequest['resultId']): ReturnType<GeneratedSQLApi['getSqlQueryChartData']> {
-        return this.delegate.getSqlQueryChartData({ channelId: this.channelId, conversationId, resultId });
+    public getSqlQueryChartData(conversationId: GetSqlQueryChartDataRequest['conversationId'], resultId: GetSqlQueryChartDataRequest['resultId'], options: GetSqlQueryChartDataOptions = {}): ReturnType<GeneratedSQLApi['getSqlQueryChartData']> {
+        return execute(options, signal => this.delegate.getSqlQueryChartData({ channelId: this.channelId, conversationId, resultId }, { signal }));
     }
 
     /**
@@ -386,10 +633,12 @@ export class SqlApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public async exportSqlQueryResult(conversationId: ExportSqlQueryResultRequest['conversationId'], resultId: ExportSqlQueryResultRequest['resultId'], options: ExportSqlQueryResultOptions): Promise<Uint8Array> {
-        const value = await this.delegate.exportSqlQueryResult({ channelId: this.channelId, conversationId, resultId, ...options });
-        return new Uint8Array(await value.arrayBuffer());
+        return (await this.exportSqlQueryResultWithMetadata(conversationId, resultId, options)).bytes;
     }
 
+    public exportSqlQueryResultWithMetadata(conversationId: ExportSqlQueryResultRequest['conversationId'], resultId: ExportSqlQueryResultRequest['resultId'], options: ExportSqlQueryResultOptions): Promise<DownloadResponse> {
+        return execute(options, async signal => downloadResponse((await this.delegate.exportSqlQueryResultRaw({ channelId: this.channelId, conversationId, resultId, format: options.format, accept: options.accept }, { signal })).raw));
+    }
 }
 
 /** Channel-bound messages operations for one external user. */
@@ -407,7 +656,7 @@ export class MessagesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public listConversationMessages(conversationId: ListConversationMessagesRequest['conversationId'], options: ListConversationMessagesOptions = {}): ReturnType<GeneratedMessagesApi['listConversationMessages']> {
-        return this.delegate.listConversationMessages({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.listConversationMessages({ channelId: this.channelId, conversationId, current: options.current, size: options.size, orderBy: options.orderBy, orderDirection: options.orderDirection, orderNullHandling: options.orderNullHandling, keyword: options.keyword }, { signal }));
     }
 
     /**
@@ -417,8 +666,8 @@ export class MessagesApi {
      * @param messageId - 用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationMessage(conversationId: GetConversationMessageRequest['conversationId'], messageId: GetConversationMessageRequest['messageId']): ReturnType<GeneratedMessagesApi['getConversationMessage']> {
-        return this.delegate.getConversationMessage({ channelId: this.channelId, conversationId, messageId });
+    public getConversationMessage(conversationId: GetConversationMessageRequest['conversationId'], messageId: GetConversationMessageRequest['messageId'], options: GetConversationMessageOptions = {}): ReturnType<GeneratedMessagesApi['getConversationMessage']> {
+        return execute(options, signal => this.delegate.getConversationMessage({ channelId: this.channelId, conversationId, messageId }, { signal }));
     }
 
     /**
@@ -429,7 +678,7 @@ export class MessagesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public listConversationAsyncTasks(conversationId: ListConversationAsyncTasksRequest['conversationId'], options: ListConversationAsyncTasksOptions = {}): ReturnType<GeneratedMessagesApi['listConversationAsyncTasks']> {
-        return this.delegate.listConversationAsyncTasks({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.listConversationAsyncTasks({ channelId: this.channelId, conversationId, current: options.current, size: options.size, orderBy: options.orderBy, orderDirection: options.orderDirection, orderNullHandling: options.orderNullHandling, keyword: options.keyword, status: options.status }, { signal }));
     }
 
     /**
@@ -440,7 +689,7 @@ export class MessagesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public syncConversationAsyncTasks(conversationId: SyncConversationAsyncTasksRequest['conversationId'], options: SyncConversationAsyncTasksOptions = {}): ReturnType<GeneratedMessagesApi['syncConversationAsyncTasks']> {
-        return this.delegate.syncConversationAsyncTasks({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.syncConversationAsyncTasks({ channelId: this.channelId, conversationId, afterMessageId: options.afterMessageId, size: options.size }, { signal }));
     }
 
     /**
@@ -450,8 +699,8 @@ export class MessagesApi {
      * @param asyncTaskId - 异步任务 ID。 / Asynchronous task ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationAsyncTask(conversationId: GetConversationAsyncTaskRequest['conversationId'], asyncTaskId: GetConversationAsyncTaskRequest['asyncTaskId']): ReturnType<GeneratedMessagesApi['getConversationAsyncTask']> {
-        return this.delegate.getConversationAsyncTask({ channelId: this.channelId, conversationId, asyncTaskId });
+    public getConversationAsyncTask(conversationId: GetConversationAsyncTaskRequest['conversationId'], asyncTaskId: GetConversationAsyncTaskRequest['asyncTaskId'], options: GetConversationAsyncTaskOptions = {}): ReturnType<GeneratedMessagesApi['getConversationAsyncTask']> {
+        return execute(options, signal => this.delegate.getConversationAsyncTask({ channelId: this.channelId, conversationId, asyncTaskId }, { signal }));
     }
 
     /**
@@ -462,7 +711,7 @@ export class MessagesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public listConversationSubagents(conversationId: ListConversationSubagentsRequest['conversationId'], options: ListConversationSubagentsOptions = {}): ReturnType<GeneratedMessagesApi['listConversationSubagents']> {
-        return this.delegate.listConversationSubagents({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.listConversationSubagents({ channelId: this.channelId, conversationId, current: options.current, size: options.size, orderBy: options.orderBy, orderDirection: options.orderDirection, orderNullHandling: options.orderNullHandling, keyword: options.keyword, status: options.status }, { signal }));
     }
 
     /**
@@ -473,7 +722,7 @@ export class MessagesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public syncConversationSubagents(conversationId: SyncConversationSubagentsRequest['conversationId'], options: SyncConversationSubagentsOptions = {}): ReturnType<GeneratedMessagesApi['syncConversationSubagents']> {
-        return this.delegate.syncConversationSubagents({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.syncConversationSubagents({ channelId: this.channelId, conversationId, cursor: options.cursor, size: options.size }, { signal }));
     }
 
     /**
@@ -483,8 +732,8 @@ export class MessagesApi {
      * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationSubagent(conversationId: GetConversationSubagentRequest['conversationId'], subagentTaskId: GetConversationSubagentRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['getConversationSubagent']> {
-        return this.delegate.getConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId });
+    public getConversationSubagent(conversationId: GetConversationSubagentRequest['conversationId'], subagentTaskId: GetConversationSubagentRequest['subagentTaskId'], options: GetConversationSubagentOptions = {}): ReturnType<GeneratedMessagesApi['getConversationSubagent']> {
+        return execute(options, signal => this.delegate.getConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId }, { signal }));
     }
 
     /**
@@ -494,8 +743,8 @@ export class MessagesApi {
      * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public cancelConversationSubagent(conversationId: CancelConversationSubagentRequest['conversationId'], subagentTaskId: CancelConversationSubagentRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['cancelConversationSubagent']> {
-        return this.delegate.cancelConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId });
+    public cancelConversationSubagent(conversationId: CancelConversationSubagentRequest['conversationId'], subagentTaskId: CancelConversationSubagentRequest['subagentTaskId'], options: CancelConversationSubagentOptions = {}): ReturnType<GeneratedMessagesApi['cancelConversationSubagent']> {
+        return execute(options, signal => this.delegate.cancelConversationSubagent({ channelId: this.channelId, conversationId, subagentTaskId }, { signal }));
     }
 
     /**
@@ -505,8 +754,8 @@ export class MessagesApi {
      * @param subagentTaskId - 子 Agent 任务 ID。 / Subagent task ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationSubagentResult(conversationId: GetConversationSubagentResultRequest['conversationId'], subagentTaskId: GetConversationSubagentResultRequest['subagentTaskId']): ReturnType<GeneratedMessagesApi['getConversationSubagentResult']> {
-        return this.delegate.getConversationSubagentResult({ channelId: this.channelId, conversationId, subagentTaskId });
+    public getConversationSubagentResult(conversationId: GetConversationSubagentResultRequest['conversationId'], subagentTaskId: GetConversationSubagentResultRequest['subagentTaskId'], options: GetConversationSubagentResultOptions = {}): ReturnType<GeneratedMessagesApi['getConversationSubagentResult']> {
+        return execute(options, signal => this.delegate.getConversationSubagentResult({ channelId: this.channelId, conversationId, subagentTaskId }, { signal }));
     }
 
     /**
@@ -516,8 +765,19 @@ export class MessagesApi {
      * @param messageId - 用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public cancelQueuedMessage(conversationId: CancelQueuedMessageRequest['conversationId'], messageId: CancelQueuedMessageRequest['messageId']): ReturnType<GeneratedMessagesApi['cancelQueuedMessage']> {
-        return this.delegate.cancelQueuedMessage({ channelId: this.channelId, conversationId, messageId });
+    public cancelQueuedMessage(conversationId: CancelQueuedMessageRequest['conversationId'], messageId: CancelQueuedMessageRequest['messageId'], options: CancelQueuedMessageOptions = {}): ReturnType<GeneratedMessagesApi['cancelQueuedMessage']> {
+        return execute(options, signal => this.delegate.cancelQueuedMessage({ channelId: this.channelId, conversationId, messageId }, { signal }));
+    }
+
+    /**
+     * 增量同步消息 / Sync conversation messages
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param options - 查询参数与可选请求头。 / Query parameters and optional request headers.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public syncConversationMessages(conversationId: SyncConversationMessagesRequest['conversationId'], options: SyncConversationMessagesOptions = {}): ReturnType<GeneratedMessagesApi['syncConversationMessages']> {
+        return execute(options, signal => this.delegate.syncConversationMessages({ channelId: this.channelId, conversationId, afterMessageId: options.afterMessageId, size: options.size }, { signal }));
     }
 
 }
@@ -536,7 +796,7 @@ export class EventsApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public getChatEvents(options: GetChatEventsOptions): ReturnType<GeneratedEventsApi['getChatEvents']> {
-        return this.delegate.getChatEvents({ channelId: this.channelId, ...options });
+        return execute(options, signal => this.delegate.getChatEvents({ channelId: this.channelId, conversationId: options.conversationId, messageId: options.messageId }, { signal }));
     }
 
     /**
@@ -545,8 +805,8 @@ export class EventsApi {
      * @param input - 批量读取消息事件 / Get message events in batch 的强类型请求体。 / Typed request body for getChatEventsBatch.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getChatEventsBatch(input: GetChatEventsBatchRequest['aiChatEventsBatchInput']): ReturnType<GeneratedEventsApi['getChatEventsBatch']> {
-        return this.delegate.getChatEventsBatch({ channelId: this.channelId, aiChatEventsBatchInput: input });
+    public getChatEventsBatch(input: GetChatEventsBatchRequest['aiChatEventsBatchInput'], options: GetChatEventsBatchOptions = {}): ReturnType<GeneratedEventsApi['getChatEventsBatch']> {
+        return execute(options, signal => this.delegate.getChatEventsBatch({ channelId: this.channelId, aiChatEventsBatchInput: input }, { signal }));
     }
 
 }
@@ -564,8 +824,8 @@ export class InteractionsApi {
      * @param input - 提交计划审批 / Submit plan approval 的强类型请求体。 / Typed request body for approvePlan.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public approvePlan(input: ApprovePlanRequest['planApprovalInput']): ReturnType<GeneratedInteractionsApi['approvePlan']> {
-        return this.delegate.approvePlan({ channelId: this.channelId, planApprovalInput: input });
+    public approvePlan(input: ApprovePlanRequest['planApprovalInput'], options: ApprovePlanOptions = {}): ReturnType<GeneratedInteractionsApi['approvePlan']> {
+        return execute(options, signal => this.delegate.approvePlan({ channelId: this.channelId, planApprovalInput: input }, { signal }));
     }
 
     /**
@@ -574,8 +834,8 @@ export class InteractionsApi {
      * @param planId - 等待审批的计划 ID。 / Pending plan-approval ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getPlanStatus(planId: GetPlanStatusRequest['planId']): ReturnType<GeneratedInteractionsApi['getPlanStatus']> {
-        return this.delegate.getPlanStatus({ channelId: this.channelId, planId });
+    public getPlanStatus(planId: GetPlanStatusRequest['planId'], options: GetPlanStatusOptions = {}): ReturnType<GeneratedInteractionsApi['getPlanStatus']> {
+        return execute(options, signal => this.delegate.getPlanStatus({ channelId: this.channelId, planId }, { signal }));
     }
 
     /**
@@ -586,7 +846,7 @@ export class InteractionsApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public getUserInputStatus(questionId: GetUserInputStatusRequest['questionId'], options: GetUserInputStatusOptions): ReturnType<GeneratedInteractionsApi['getUserInputStatus']> {
-        return this.delegate.getUserInputStatus({ channelId: this.channelId, questionId, ...options });
+        return execute(options, signal => this.delegate.getUserInputStatus({ channelId: this.channelId, questionId, conversationId: options.conversationId, messageId: options.messageId }, { signal }));
     }
 
     /**
@@ -595,8 +855,19 @@ export class InteractionsApi {
      * @param input - 提交用户回答 / Submit a user answer 的强类型请求体。 / Typed request body for answerUserInput.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public answerUserInput(input: AnswerUserInputRequest['userInputAnswerInput']): ReturnType<GeneratedInteractionsApi['answerUserInput']> {
-        return this.delegate.answerUserInput({ channelId: this.channelId, userInputAnswerInput: input });
+    public answerUserInput(input: AnswerUserInputRequest['userInputAnswerInput'], options: AnswerUserInputOptions = {}): ReturnType<GeneratedInteractionsApi['answerUserInput']> {
+        return execute(options, signal => this.delegate.answerUserInput({ channelId: this.channelId, userInputAnswerInput: input }, { signal }));
+    }
+
+    /**
+     * 查询消息计划审批状态 / Get message plan status
+     *
+     * @param conversationId - 会话 ID；必须属于当前外部用户。 / Conversation ID owned by the current external user.
+     * @param messageId - 用户消息 ID；必须属于指定会话。 / User-message ID owned by the specified conversation.
+     * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
+     */
+    public getMessagePlanStatus(conversationId: GetMessagePlanStatusRequest['conversationId'], messageId: GetMessagePlanStatusRequest['messageId'], options: GetMessagePlanStatusOptions = {}): ReturnType<GeneratedInteractionsApi['getMessagePlanStatus']> {
+        return execute(options, signal => this.delegate.getMessagePlanStatus({ channelId: this.channelId, conversationId, messageId }, { signal }));
     }
 
 }
@@ -614,8 +885,8 @@ export class FilesApi {
      * @param input - 创建预签名上传地址 / Create a presigned upload URL 的强类型请求体。 / Typed request body for createPreSignedUpload.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public createPreSignedUpload(input: CreatePreSignedUploadRequest['generatePreSignedUrlInput']): ReturnType<GeneratedFilesApi['createPreSignedUpload']> {
-        return this.delegate.createPreSignedUpload({ channelId: this.channelId, generatePreSignedUrlInput: input });
+    public createPreSignedUpload(input: CreatePreSignedUploadRequest['generatePreSignedUrlInput'], options: CreatePreSignedUploadOptions = {}): ReturnType<GeneratedFilesApi['createPreSignedUpload']> {
+        return execute(options, signal => this.delegate.createPreSignedUpload({ channelId: this.channelId, generatePreSignedUrlInput: input }, { signal }));
     }
 
     /**
@@ -624,8 +895,8 @@ export class FilesApi {
      * @param input - 确认预签名上传 / Confirm a presigned upload 的强类型请求体。 / Typed request body for confirmPreSignedUpload.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public confirmPreSignedUpload(input: ConfirmPreSignedUploadRequest['confirmUploadInput']): ReturnType<GeneratedFilesApi['confirmPreSignedUpload']> {
-        return this.delegate.confirmPreSignedUpload({ channelId: this.channelId, confirmUploadInput: input });
+    public confirmPreSignedUpload(input: ConfirmPreSignedUploadRequest['confirmUploadInput'], options: ConfirmPreSignedUploadOptions = {}): ReturnType<GeneratedFilesApi['confirmPreSignedUpload']> {
+        return execute(options, signal => this.delegate.confirmPreSignedUpload({ channelId: this.channelId, confirmUploadInput: input }, { signal }));
     }
 
     /**
@@ -634,8 +905,8 @@ export class FilesApi {
      * @param input - 按 MD5 复用文件 / Reuse a file by MD5 的强类型请求体。 / Typed request body for createFileByContentMd5.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public createFileByContentMd5(input: CreateFileByContentMd5Request['createFileInput']): ReturnType<GeneratedFilesApi['createFileByContentMd5']> {
-        return this.delegate.createFileByContentMd5({ channelId: this.channelId, createFileInput: input });
+    public createFileByContentMd5(input: CreateFileByContentMd5Request['createFileInput'], options: CreateFileByContentMd5Options = {}): ReturnType<GeneratedFilesApi['createFileByContentMd5']> {
+        return execute(options, signal => this.delegate.createFileByContentMd5({ channelId: this.channelId, createFileInput: input }, { signal }));
     }
 
     /**
@@ -645,7 +916,7 @@ export class FilesApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public fileExistsByContentMd5(options: FileExistsByContentMd5Options): ReturnType<GeneratedFilesApi['fileExistsByContentMd5']> {
-        return this.delegate.fileExistsByContentMd5({ channelId: this.channelId, ...options });
+        return execute(options, signal => this.delegate.fileExistsByContentMd5({ channelId: this.channelId, contentMd5: options.contentMd5 }, { signal }));
     }
 
     /**
@@ -655,8 +926,8 @@ export class FilesApi {
      * @param fileId - 文件记录 ID。 / File record ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getConversationFilePreview(conversationId: GetConversationFilePreviewRequest['conversationId'], fileId: GetConversationFilePreviewRequest['fileId']): ReturnType<GeneratedFilesApi['getConversationFilePreview']> {
-        return this.delegate.getConversationFilePreview({ channelId: this.channelId, conversationId, fileId });
+    public getConversationFilePreview(conversationId: GetConversationFilePreviewRequest['conversationId'], fileId: GetConversationFilePreviewRequest['fileId'], options: GetConversationFilePreviewOptions = {}): ReturnType<GeneratedFilesApi['getConversationFilePreview']> {
+        return execute(options, signal => this.delegate.getConversationFilePreview({ channelId: this.channelId, conversationId, fileId }, { signal }));
     }
 
     /**
@@ -667,8 +938,8 @@ export class FilesApi {
      * @param fileId - 文件记录 ID。 / File record ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getPlanIntermediateFilePreview(conversationId: GetPlanIntermediateFilePreviewRequest['conversationId'], messageId: GetPlanIntermediateFilePreviewRequest['messageId'], fileId: GetPlanIntermediateFilePreviewRequest['fileId']): ReturnType<GeneratedFilesApi['getPlanIntermediateFilePreview']> {
-        return this.delegate.getPlanIntermediateFilePreview({ channelId: this.channelId, conversationId, messageId, fileId });
+    public getPlanIntermediateFilePreview(conversationId: GetPlanIntermediateFilePreviewRequest['conversationId'], messageId: GetPlanIntermediateFilePreviewRequest['messageId'], fileId: GetPlanIntermediateFilePreviewRequest['fileId'], options: GetPlanIntermediateFilePreviewOptions = {}): ReturnType<GeneratedFilesApi['getPlanIntermediateFilePreview']> {
+        return execute(options, signal => this.delegate.getPlanIntermediateFilePreview({ channelId: this.channelId, conversationId, messageId, fileId }, { signal }));
     }
 
 }
@@ -686,8 +957,8 @@ export class KnowledgeApi {
      * @param input - 批量读取引用元数据 / Get citation metadata in batch 的强类型请求体。 / Typed request body for getCitationMetadataBatch.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getCitationMetadataBatch(input: GetCitationMetadataBatchRequest['returnedReference']): ReturnType<GeneratedKnowledgeApi['getCitationMetadataBatch']> {
-        return this.delegate.getCitationMetadataBatch({ channelId: this.channelId, returnedReference: input });
+    public getCitationMetadataBatch(input: GetCitationMetadataBatchRequest['returnedReference'], options: GetCitationMetadataBatchOptions = {}): ReturnType<GeneratedKnowledgeApi['getCitationMetadataBatch']> {
+        return execute(options, signal => this.delegate.getCitationMetadataBatch({ channelId: this.channelId, returnedReference: input }, { signal }));
     }
 
     /**
@@ -697,8 +968,8 @@ export class KnowledgeApi {
      * @param referenceId - 知识引用记录 ID。 / Knowledge-reference record ID.
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
-    public getCitationMetadata(citationType: GetCitationMetadataRequest['citationType'], referenceId: GetCitationMetadataRequest['referenceId']): ReturnType<GeneratedKnowledgeApi['getCitationMetadata']> {
-        return this.delegate.getCitationMetadata({ channelId: this.channelId, citationType, referenceId });
+    public getCitationMetadata(citationType: GetCitationMetadataRequest['citationType'], referenceId: GetCitationMetadataRequest['referenceId'], options: GetCitationMetadataOptions = {}): ReturnType<GeneratedKnowledgeApi['getCitationMetadata']> {
+        return execute(options, signal => this.delegate.getCitationMetadata({ channelId: this.channelId, citationType, referenceId }, { signal }));
     }
 
 }
@@ -718,7 +989,7 @@ export class WorkspaceApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public listWorkspaceArtifacts(conversationId: ListWorkspaceArtifactsRequest['conversationId'], options: ListWorkspaceArtifactsOptions = {}): ReturnType<GeneratedWorkspaceApi['listWorkspaceArtifacts']> {
-        return this.delegate.listWorkspaceArtifacts({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.listWorkspaceArtifacts({ channelId: this.channelId, conversationId, current: options.current, size: options.size, orderBy: options.orderBy, orderDirection: options.orderDirection, orderNullHandling: options.orderNullHandling, keyword: options.keyword, prefix: options.prefix }, { signal }));
     }
 
     /**
@@ -729,7 +1000,7 @@ export class WorkspaceApi {
      * @returns 契约定义的强类型响应。 / The typed response defined by the contract.
      */
     public getWorkspaceFilePreview(conversationId: GetWorkspaceFilePreviewRequest['conversationId'], options: GetWorkspaceFilePreviewOptions): ReturnType<GeneratedWorkspaceApi['getWorkspaceFilePreview']> {
-        return this.delegate.getWorkspaceFilePreview({ channelId: this.channelId, conversationId, ...options });
+        return execute(options, signal => this.delegate.getWorkspaceFilePreview({ channelId: this.channelId, conversationId, path: options.path }, { signal }));
     }
 
 }

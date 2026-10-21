@@ -7,6 +7,13 @@ test('preserves unknown event JSON', () => {
     assert.deepEqual(decodeAiChatBriefEvent(raw), { type: 'future-event', rawJson: raw });
 });
 
+test('internal model messages are outside the published event union', () => {
+    for (const type of ['chat-client-request', 'chat-client-response']) {
+        const rawJson = JSON.stringify({ type });
+        assert.deepEqual(decodeAiChatBriefEvent(rawJson), { type, rawJson });
+    }
+});
+
 test('preserves unknown tool-extension JSON', () => {
     const raw = '{"category":"future-tool","content":{"value":42}}';
     assert.deepEqual(decodeToolExtension(raw), { category: 'future-tool', rawJson: raw });
