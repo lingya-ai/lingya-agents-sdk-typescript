@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1 - 2026-10-23
+
+- Add `sizeBytes` to `GeneratePreSignedUrlInput` and its JSON serializers. The backend requires the declared attachment size when storage accounting is enforced; omitting it returns `400 file.size-required`.
+- Add `uploadMethod`, `formFields`, and `maximumBytes` to `GeneratePreSignedUrlOutput` so clients can follow the issued `PUT` or `POST_FORM` upload protocol.
+- Keep the contract version at 0.1.7; this is an additive schema correction for the presign endpoints.
+
 ## 0.7.0 - 2026-10-20
 
 - Add injected Fetch/WebSocket factories, cancellation and full-response deadlines, unified ApiError classifications, owned SSE/WebSocket subscriptions, diagnostics and download metadata.

@@ -35,6 +35,10 @@ export interface GeneratePreSignedUrlInput {
      * 文件 ID / file ID。
      */
     fileId?: number | null;
+    /**
+     * 实际文件大小（字节） / actual file size in bytes。
+     */
+    sizeBytes?: number | null;
 }
 
 
@@ -73,6 +77,7 @@ export function GeneratePreSignedUrlInputFromJSONTyped(json: any, ignoreDiscrimi
         'module': json['module'],
         'contentMd5': json['contentMd5'],
         'fileId': json['fileId'] === undefined ? undefined : json['fileId'] === null ? null : json['fileId'],
+        'sizeBytes': json['sizeBytes'] === undefined ? undefined : json['sizeBytes'] === null ? null : json['sizeBytes'],
     };
 }
 
@@ -91,6 +96,7 @@ export function GeneratePreSignedUrlInputToJSONTyped(value?: GeneratePreSignedUr
         'module': value['module'],
         'contentMd5': value['contentMd5'],
         'fileId': value['fileId'],
+        'sizeBytes': value['sizeBytes'],
     };
 }
 

@@ -31,7 +31,29 @@ export interface GeneratePreSignedUrlOutput {
      * 预签名 URL / presigned URL。
      */
     url?: string | null;
+    /**
+     * 客户端上传方式 / upload method。
+     */
+    uploadMethod?: GeneratePreSignedUrlOutputUploadMethodEnum;
+    /**
+     * 表单上传字段 / form fields。
+     */
+    formFields?: { [key: string]: string; };
+    /**
+     * 受限上传允许的最大字节数 / maximum bytes for bounded upload。
+     */
+    maximumBytes?: number | null;
 }
+
+
+/**
+ * @export
+ */
+export const GeneratePreSignedUrlOutputUploadMethodEnum = {
+    Put: 'PUT',
+    PostForm: 'POST_FORM',
+} as const;
+export type GeneratePreSignedUrlOutputUploadMethodEnum = typeof GeneratePreSignedUrlOutputUploadMethodEnum[keyof typeof GeneratePreSignedUrlOutputUploadMethodEnum];
 
 /**
  * Check if a given object implements the GeneratePreSignedUrlOutput interface.
@@ -54,6 +76,9 @@ export function GeneratePreSignedUrlOutputFromJSONTyped(json: any, ignoreDiscrim
         'support': json['support'],
         'fileUk': json['fileUk'] === undefined ? undefined : json['fileUk'] === null ? null : json['fileUk'],
         'url': json['url'] === undefined ? undefined : json['url'] === null ? null : json['url'],
+        'uploadMethod': json['uploadMethod'] === undefined ? undefined : json['uploadMethod'],
+        'formFields': json['formFields'] === undefined ? undefined : json['formFields'],
+        'maximumBytes': json['maximumBytes'] === undefined ? undefined : json['maximumBytes'] === null ? null : json['maximumBytes'],
     };
 }
 
@@ -71,6 +96,9 @@ export function GeneratePreSignedUrlOutputToJSONTyped(value?: GeneratePreSignedU
         'support': value['support'],
         'fileUk': value['fileUk'],
         'url': value['url'],
+        'uploadMethod': value['uploadMethod'],
+        'formFields': value['formFields'],
+        'maximumBytes': value['maximumBytes'],
     };
 }
 

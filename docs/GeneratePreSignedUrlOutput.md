@@ -10,6 +10,9 @@ Name | Type
 `support` | boolean
 `fileUk` | string
 `url` | string
+`uploadMethod` | string
+`formFields` | object
+`maximumBytes` | number
 
 ## Example
 
@@ -21,6 +24,9 @@ const example = {
   "support": null,
   "fileUk": null,
   "url": null,
+  "uploadMethod": null,
+  "formFields": null,
+  "maximumBytes": null,
 } satisfies GeneratePreSignedUrlOutput
 
 console.log(example)

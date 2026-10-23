@@ -11,6 +11,7 @@ Name | Type
 `module` | string
 `contentMd5` | string
 `fileId` | number
+`sizeBytes` | number
 
 ## Example
 
@@ -23,6 +24,7 @@ const example = {
   "module": null,
   "contentMd5": null,
   "fileId": null,
+  "sizeBytes": null,
 } satisfies GeneratePreSignedUrlInput
 
 console.log(example)
