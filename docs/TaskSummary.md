@@ -8,11 +8,8 @@ TaskSummary 的公开协议结构。 / Public contract for task summary.
 Name | Type
 ------------ | -------------
 `id` | string
-`subject` | string
-`activeForm` | string
+`content` | string
 `status` | string
-`blocks` | Array&lt;string&gt;
-`blockedBy` | Array&lt;string&gt;
 
 ## Example
 
@@ -22,11 +19,8 @@ import type { TaskSummary } from '@lingya-ai/agents-sdk'
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "subject": null,
-  "activeForm": null,
+  "content": null,
   "status": null,
-  "blocks": null,
-  "blockedBy": null,
 } satisfies TaskSummary
 
 console.log(example)

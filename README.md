@@ -8,7 +8,7 @@ Use HMAC on trusted Node.js servers or single-use tokens in browsers.
 Installation
 
 ```bash
-npm install @lingya-ai/agents-sdk@0.7.1
+npm install @lingya-ai/agents-sdk@1.0.0
 ```
 
 Node 入口需要 Node.js 20 或更高版本；浏览器入口使用现代 Web API。

@@ -10,6 +10,7 @@ Name | Type
 `type` | string
 `query` | string
 `attachments` | [Array&lt;MediaAttachment&gt;](MediaAttachment.md)
+`executionType` | string
 
 ## Example
 
@@ -21,6 +22,7 @@ const example = {
   "type": null,
   "query": null,
   "attachments": null,
+  "executionType": null,
 } satisfies AiChatUserQueryBriefEvent
 
 console.log(example)

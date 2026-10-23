@@ -9,6 +9,7 @@ Name | Type
 ------------ | -------------
 `type` | string
 `message` | string
+`terminalReason` | string
 
 ## Example
 
@@ -19,6 +20,7 @@ import type { AiChatErrorBriefEvent } from '@lingya-ai/agents-sdk'
 const example = {
   "type": null,
   "message": null,
+  "terminalReason": null,
 } satisfies AiChatErrorBriefEvent
 
 console.log(example)

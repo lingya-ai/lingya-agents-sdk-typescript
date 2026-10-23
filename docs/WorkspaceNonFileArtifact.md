@@ -13,6 +13,7 @@ Name | Type
 `description` | string
 `lastUpdateTime` | Date
 `previewUrl` | string
+`htmlPageAuthoringMode` | string
 
 ## Example
 
@@ -27,6 +28,7 @@ const example = {
   "description": null,
   "lastUpdateTime": null,
   "previewUrl": null,
+  "htmlPageAuthoringMode": null,
 } satisfies WorkspaceNonFileArtifact
 
 console.log(example)

@@ -8,9 +8,6 @@ TaskProgressExtensionContent 的公开协议结构。 / Public contract for task
 Name | Type
 ------------ | -------------
 `action` | string
-`currentTaskId` | string
-`currentTaskStatus` | string
-`archived` | boolean
 `total` | number
 `pending` | number
 `inProgress` | number
@@ -26,9 +23,6 @@ import type { TaskProgressExtensionContent } from '@lingya-ai/agents-sdk'
 // TODO: Update the object below with actual values
 const example = {
   "action": null,
-  "currentTaskId": null,
-  "currentTaskStatus": null,
-  "archived": null,
   "total": null,
   "pending": null,
   "inProgress": null,

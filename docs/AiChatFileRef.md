@@ -8,7 +8,6 @@ AiChatFileRef 的公开协议结构。 / Public contract for ai chat file ref.
 Name | Type
 ------------ | -------------
 `id` | number
-`fileName` | string
 
 ## Example
 
@@ -18,7 +17,6 @@ import type { AiChatFileRef } from '@lingya-ai/agents-sdk'
 // TODO: Update the object below with actual values
 const example = {
   "id": null,
-  "fileName": null,
 } satisfies AiChatFileRef
 
 console.log(example)

@@ -12,7 +12,6 @@ Name | Type
 `subagentType` | string
 `status` | string
 `phase` | string
-`progressPercent` | number
 `parentConversationId` | string
 `parentMessageId` | string
 `childConversationId` | string
@@ -40,7 +39,6 @@ const example = {
   "subagentType": null,
   "status": null,
   "phase": null,
-  "progressPercent": null,
   "parentConversationId": null,
   "parentMessageId": null,
   "childConversationId": null,

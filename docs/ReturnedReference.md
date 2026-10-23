@@ -7,7 +7,7 @@ ReturnedReference 的公开协议结构。 / Public contract for returned refere
 
 Name | Type
 ------------ | -------------
-`type` | string
+`citationType` | string
 `referenceId` | number
 
 ## Example
@@ -17,7 +17,7 @@ import type { ReturnedReference } from '@lingya-ai/agents-sdk'
 
 // TODO: Update the object below with actual values
 const example = {
-  "type": null,
+  "citationType": null,
   "referenceId": null,
 } satisfies ReturnedReference
 

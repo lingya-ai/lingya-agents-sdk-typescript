@@ -11,7 +11,7 @@ Name | Type
 `fileUk` | string
 `url` | string
 `uploadMethod` | string
-`formFields` | object
+`formFields` | { [key: string]: string; }
 `maximumBytes` | number
 
 ## Example

@@ -10,9 +10,11 @@ Name | Type
 `type` | string
 `query` | string
 `attachments` | [Array&lt;MediaAttachment&gt;](MediaAttachment.md)
+`executionType` | string
 `level` | string
 `warning` | string
 `message` | string
+`terminalReason` | string
 `toolId` | string
 `toolName` | string
 `status` | string
@@ -47,9 +49,11 @@ const example = {
   "type": null,
   "query": null,
   "attachments": null,
+  "executionType": null,
   "level": null,
   "warning": null,
   "message": null,
+  "terminalReason": null,
   "toolId": null,
   "toolName": null,
   "status": null,

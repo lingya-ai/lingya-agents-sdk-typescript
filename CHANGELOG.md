@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 - 2026-10-23
+
+- First stable release against contract 1.0.0; the HTTP base path is unchanged.
+- Presigned uploads: add `sizeBytes` to `GeneratePreSignedUrlInput` and `uploadMethod`, `formFields`, `maximumBytes` to `GeneratePreSignedUrlOutput`.
+- Align models with the server: `ReturnedReference.citationType`, `TaskSummary {id, content, status}`, `WorkspaceFile.fileId`, `WorkspaceNonFileArtifact.htmlPageAuthoringMode`, `AiChatErrorBriefEvent.terminalReason` and `AiChatUserQueryBriefEvent.executionType`.
+- Breaking: remove fields the server never returns (`AiChatFileRef.fileName`, `SubagentTask.progressPercent`, stale `TaskProgressExtensionContent` action-target fields); regenerate or recompile clients against 1.0.0.
+
 ## 0.7.1 - 2026-10-23
 
 - Add `sizeBytes` to `GeneratePreSignedUrlInput` and its JSON serializers. The backend requires the declared attachment size when storage accounting is enforced; omitting it returns `400 file.size-required`.
